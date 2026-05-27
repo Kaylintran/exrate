@@ -1,0 +1,12 @@
+{
+  "functions": {
+    "api/*.js": {
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    { "source": "/api/rates", "destination": "/api/rates.js" },
+    { "source": "/api/history", "destination": "/api/history.js" },
+    { "source": "/(.*)", "destination": "/public/index.html" }
+  ]
+}

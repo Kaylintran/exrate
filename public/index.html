@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExRate — Tỷ Giá Ngoại Tệ Việt Nam</title>
+<meta name="description" content="Tra cứu tỷ giá ngoại tệ ngân hàng Việt Nam, tỷ giá chợ đen, công cụ đổi tiền và tin tức tài chính mới nhất.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ===== RESET ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0A0A0F;--surface:#13131A;--surface2:#1A1A24;
+  --border:rgba(255,255,255,0.06);--border-h:rgba(201,168,76,0.3);
+  --gold:#C9A84C;--gold-dim:rgba(201,168,76,0.15);--gold-glow:rgba(201,168,76,0.07);
+  --blue:#3B82F6;--blue-dim:rgba(59,130,246,0.12);
+  --text:#F0F0F0;--muted:#8B8B9E;--dim:#4A4A5E;
+  --green:#22C55E;--green-dim:rgba(34,197,94,0.12);
+  --red:#EF4444;--red-dim:rgba(239,68,68,0.12);
+  --r:12px;--rs:8px;--nav:64px;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  --shadow-g:0 0 24px rgba(201,168,76,0.12);
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;overflow-x:hidden}
+::selection{background:var(--gold-dim);color:var(--gold)}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--gold)}
+
+/* noise */
+body::before{content:'';position:fixed;inset:0;opacity:.35;pointer-events:none;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E")}
+
+/* ===== NAV ===== */
+nav{position:fixed;top:0;left:0;right:0;height:var(--nav);background:rgba(10,10,15,.88);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);z-index:100;display:flex;align-items:center;padding:0 24px;gap:20px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--gold),#906e1a);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:13px;color:#0A0A0F;letter-spacing:-.5px}
+.logo-text{font-size:18px;font-weight:600;letter-spacing:-.5px}
+.logo-text span{color:var(--gold)}
+.nav-tabs{display:flex;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none}
+.nav-tabs::-webkit-scrollbar{display:none}
+.tab{padding:8px 16px;border-radius:var(--rs);font-size:14px;font-weight:500;color:var(--muted);
+  cursor:pointer;border:none;background:none;white-space:nowrap;transition:all .2s;position:relative}
+.tab:hover{color:var(--text);background:var(--surface)}
+.tab.on{color:var(--gold);background:var(--gold-glow)}
+.tab.on::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:16px;height:2px;background:var(--gold);border-radius:2px}
+.langs{display:flex;gap:3px;flex-shrink:0}
+.lbtn{padding:5px 9px;border-radius:6px;font-size:12px;font-weight:500;color:var(--muted);
+  cursor:pointer;border:1px solid transparent;background:none;transition:all .2s;white-space:nowrap}
+.lbtn:hover{color:var(--text);border-color:var(--border)}
+.lbtn.on{color:var(--gold);border-color:var(--gold);background:var(--gold-glow)}
+
+/* ===== MAIN ===== */
+main{padding-top:calc(var(--nav) + 32px);max-width:1280px;margin:0 auto;
+  padding-left:24px;padding-right:24px;padding-bottom:80px;position:relative;z-index:1}
+
+/* ===== SECTIONS ===== */
+.sec{display:none;animation:fi .35s ease}
+.sec.on{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== HEADINGS ===== */
+.sh{margin-bottom:28px;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.st{font-size:26px;font-weight:600;letter-spacing:-.5px}
+.st span{color:var(--gold)}
+.ss{font-size:13px;color:var(--muted);margin-top:4px}
+
+/* ===== CARD ===== */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;
+  transition:border-color .2s,box-shadow .2s}
+.card:hover{border-color:var(--border-h);box-shadow:var(--shadow-g)}
+
+/* ===== BADGE ===== */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;
+  font-size:11px;font-weight:600;letter-spacing:.3px}
+.b-green{background:var(--green-dim);color:var(--green)}
+.b-red{background:var(--red-dim);color:var(--red)}
+.b-gold{background:var(--gold-dim);color:var(--gold)}
+.b-blue{background:var(--blue-dim);color:var(--blue)}
+.pulse::before{content:'';display:inline-block;width:6px;height:6px;background:currentColor;
+  border-radius:50%;animation:p 1.5s infinite}
+@keyframes p{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+
+/* ===== FILTERS ===== */
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.fsel,.finp{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);
+  color:var(--text);font-family:var(--font);font-size:13px;padding:8px 12px;outline:none;
+  cursor:pointer;transition:border-color .2s}
+.fsel:focus,.finp:focus{border-color:var(--gold)}
+.fsel option{background:var(--surface2)}
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7);cursor:pointer}
+.refresh-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--rs);
+  background:var(--gold-glow);border:1px solid rgba(201,168,76,.2);color:var(--gold);
+  font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+.refresh-btn:hover{background:var(--gold-dim)}
+.refresh-btn.spinning .ri{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===== STATS BAR ===== */
+.stats-bar{display:flex;gap:14px;margin-bottom:24px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.stats-bar::-webkit-scrollbar{display:none}
+.chip{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--rs);padding:12px 16px;min-width:140px;flex-shrink:0;gap:2px;transition:all .2s}
+.chip:hover{border-color:var(--border-h)}
+.chip-lbl{font-size:11px;color:var(--dim);font-weight:500;letter-spacing:.3px}
+.chip-val{font-family:var(--mono);font-size:16px;font-weight:500;font-feature-settings:"tnum"}
+.chip-chg{font-size:11px}
+
+/* ===== TABLE ===== */
+.tw{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:var(--surface2);color:var(--muted);font-weight:500;padding:12px 16px;
+  text-align:left;white-space:nowrap;letter-spacing:.3px;font-size:11px;text-transform:uppercase;
+  position:sticky;top:0;z-index:2}
+tbody tr{border-top:1px solid var(--border);transition:background .15s}
+tbody tr:hover{background:rgba(255,255,255,.025)}
+tbody td{padding:12px 16px;white-space:nowrap;vertical-align:middle}
+.buy{color:#60A5FA;font-family:var(--mono);font-feature-settings:"tnum"}
+.sell{color:#F87171;font-family:var(--mono);font-feature-settings:"tnum"}
+.ref{color:var(--muted);font-family:var(--mono);font-feature-settings:"tnum"}
+.up{color:var(--green);font-size:12px}
+.dn{color:var(--red);font-size:12px}
+.bank-badge{display:inline-flex;align-items:center;gap:8px}
+.blogo{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:#0A0A0F;flex-shrink:0}
+.cflag{font-size:16px}
+.ccode{font-weight:600;font-size:13px}
+.cname{font-size:11px;color:var(--muted)}
+
+/* ===== SKELETON ===== */
+.skel{background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);
+  background-size:200% 100%;animation:sh 1.5s infinite;border-radius:4px}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ===== STATUS BAR ===== */
+.status-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface2);
+  border:1px solid var(--border);border-radius:var(--rs);font-size:12px;color:var(--muted);margin-bottom:20px}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:p 2s infinite}
+.status-dot.err{background:var(--red);animation:none}
+.status-dot.loading{background:var(--gold)}
+
+/* ===== BLACK MARKET ===== */
+.bm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:28px}
+.bm-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:24px;position:relative;overflow:hidden;transition:all .2s}
+.bm-card::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 80% 20%,rgba(201,168,76,.06) 0%,transparent 70%);pointer-events:none}
+.bm-card:hover{border-color:var(--border-h)}
+.bm-lbl{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px}
+.bm-val{font-family:var(--mono);font-size:30px;font-weight:500;letter-spacing:-1px;font-feature-settings:"tnum"}
+.bm-unit{font-size:13px;color:var(--muted);font-weight:400;margin-left:4px;font-family:var(--font)}
+.bm-chg{margin-top:8px;font-size:13px;display:flex;align-items:center;gap:6px}
+.bm-ts{font-size:11px;color:var(--dim);margin-top:14px}
+
+/* ===== NEWS ===== */
+.news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
+.nc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  overflow:hidden;cursor:pointer;transition:all .25s}
+.nc:hover{border-color:var(--border-h);transform:translateY(-2px);box-shadow:var(--shadow-g)}
+.nth{height:150px;background:linear-gradient(135deg,var(--surface2),var(--bg));
+  display:flex;align-items:center;justify-content:center;font-size:40px;position:relative;overflow:hidden}
+.nth::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,var(--surface) 100%)}
+.nb{padding:16px}
+.nmeta{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.nsrc{font-size:11px;color:var(--gold);font-weight:600;letter-spacing:.4px}
+.ntime{font-size:11px;color:var(--dim)}
+.ntitle{font-size:15px;font-weight:600;line-height:1.4;margin-bottom:6px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.nsumm{font-size:13px;color:var(--muted);line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ntag{display:inline-block;margin-top:10px;padding:2px 8px;border-radius:4px;
+  font-size:10px;font-weight:600;letter-spacing:.5px;background:var(--blue-dim);color:var(--blue)}
+
+/* ===== CONVERTER ===== */
+.conv-wrap{max-width:620px;margin:0 auto}
+.conv-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:32px;position:relative;overflow:hidden}
+.conv-card::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;
+  background:radial-gradient(circle,rgba(201,168,76,.07) 0%,transparent 70%);pointer-events:none}
+.conv-row{margin-bottom:16px}
+.conv-lbl{font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.3px;margin-bottom:8px}
+.conv-field{display:flex;gap:10px}
+.conv-in{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);
+  color:var(--text);font-family:var(--mono);font-size:22px;font-weight:500;padding:14px 16px;
+  outline:none;transition:border-color .2s;font-feature-settings:"tnum";min-width:0}
+.conv-in:focus{border-color:var(--gold)}
+.conv-sel{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);
+  color:var(--text);font-family:var(--font);font-size:14px;font-weight:600;padding:14px 12px;
+  outline:none;cursor:pointer;transition:border-color .2s;min-width:120px}
+.conv-sel:focus{border-color:var(--gold)}
+.swap-btn{width:100%;padding:12px;background:var(--gold-glow);border:1px solid rgba(201,168,76,.2);
+  border-radius:var(--rs);color:var(--gold);font-family:var(--font);font-size:14px;font-weight:600;
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin:4px 0 16px}
+.swap-btn:hover{background:var(--gold-dim)}
+.swap-icon{font-size:18px;transition:transform .3s}
+.swap-btn:active .swap-icon{transform:rotate(180deg)}
+.conv-res{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);
+  padding:20px 16px;text-align:center;margin-top:8px}
+.conv-res-lbl{font-size:12px;color:var(--muted);margin-bottom:6px}
+.conv-res-val{font-family:var(--mono);font-size:28px;font-weight:500;color:var(--gold);font-feature-settings:"tnum"}
+.conv-res-rate{font-size:12px;color:var(--dim);margin-top:6px}
+.conv-rates{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;margin-top:28px}
+.cri{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px}
+.cri-pair{font-size:11px;color:var(--muted);font-weight:500}
+.cri-val{font-family:var(--mono);font-size:14px;font-weight:500;margin-top:2px;font-feature-settings:"tnum"}
+
+/* ===== DIVIDER ===== */
+.gd{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:28px 0;opacity:.25}
+
+/* ===== ERROR STATE ===== */
+.err-box{background:var(--red-dim);border:1px solid rgba(239,68,68,.2);border-radius:var(--rs);
+  padding:16px 20px;color:var(--red);font-size:14px;display:flex;align-items:center;gap:10px}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){
+  nav{padding:0 16px;gap:12px}
+  .logo-text{display:none}
+  main{padding-left:16px;padding-right:16px}
+  .st{font-size:20px}
+  .bm-val{font-size:24px}
+  .news-grid{grid-template-columns:1fr}
+  .conv-in{font-size:18px}
+  .conv-res-val{font-size:22px}
+  .conv-card{padding:20px}
+}
+@media(max-width:480px){
+  .tab{padding:7px 10px;font-size:13px}
+  .lbtn{padding:4px 6px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="logo" href="/">
+    <div class="logo-icon">Ex</div>
+    <div class="logo-text">Ex<span>Rate</span></div>
+  </a>
+  <div class="nav-tabs" id="navTabs">
+    <button class="tab on" data-sec="bank" data-i18n="nav.bank">Tỷ Giá NH</button>
+    <button class="tab" data-sec="black" data-i18n="nav.black">Chợ Đen</button>
+    <button class="tab" data-sec="news" data-i18n="nav.news">Tin Tức</button>
+    <button class="tab" data-sec="conv" data-i18n="nav.conv">Đổi Tiền</button>
+  </div>
+  <div class="langs">
+    <button class="lbtn on" data-lang="vi">🇻🇳 VI</button>
+    <button class="lbtn" data-lang="ko">🇰🇷 KR</button>
+    <button class="lbtn" data-lang="zh-cn">🇨🇳 CN</button>
+    <button class="lbtn" data-lang="zh-tw">🇹🇼 TW</button>
+  </div>
+</nav>
+
+<main>
+
+  <!-- SECTION: BANK -->
+  <section class="sec on" id="s-bank">
+    <div class="sh">
+      <div>
+        <div class="st" data-i18n="bank.title">Tỷ Giá <span>Ngân Hàng</span></div>
+        <div class="ss" id="bank-ts"></div>
+      </div>
+      <div class="filters">
+        <select class="fsel" id="bankFilter" onchange="renderBank()">
+          <option value="all" data-i18n="bank.all">Tất cả ngân hàng</option>
+          <option>Vietcombank</option><option>BIDV</option><option>Techcombank</option>
+          <option>MB Bank</option><option>ACB</option><option>VPBank</option><option>Agribank</option>
+        </select>
+        <select class="fsel" id="curFilter" onchange="renderBank()">
+          <option value="all" data-i18n="bank.allcur">Tất cả ngoại tệ</option>
+          <option>USD</option><option>EUR</option><option>JPY</option>
+          <option>KRW</option><option>CNY</option><option>GBP</option><option>AUD</option>
+        </select>
+        <button class="refresh-btn" id="refreshBtn" onclick="loadRates(true)">
+          <span class="ri">↻</span> <span data-i18n="bank.refresh">Làm mới</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="status-bar" id="statusBar">
+      <div class="status-dot loading" id="statusDot"></div>
+      <span id="statusTxt">Đang tải dữ liệu...</span>
+    </div>
+
+    <div class="stats-bar" id="statsBar"></div>
+
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="bank.th.bank">Ngân Hàng</th>
+            <th data-i18n="bank.th.cur">Ngoại Tệ</th>
+            <th data-i18n="bank.th.buy">Mua Vào</th>
+            <th data-i18n="bank.th.sell">Bán Ra</th>
+            <th data-i18n="bank.th.ref">Tham Chiếu</th>
+            <th data-i18n="bank.th.chg">Biến Động</th>
+          </tr>
+        </thead>
+        <tbody id="bankBody">
+          <tr><td colspan="6" style="padding:48px;text-align:center">
+            <div style="display:flex;flex-direction:column;gap:10px;align-items:center">
+              <div class="skel" style="height:14px;width:70%;max-width:380px"></div>
+              <div class="skel" style="height:14px;width:55%;max-width:300px"></div>
+              <div class="skel" style="height:14px;width:65%;max-width:340px"></div>
+              <div class="skel" style="height:14px;width:50%;max-width:270px"></div>
+            </div>
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION: BLACK MARKET -->
+  <section class="sec" id="s-black">
+    <div class="sh">
+      <div>
+        <div class="st" data-i18n="bm.title">Tỷ Giá <span>Chợ Đen</span></div>
+        <div class="ss" data-i18n="bm.sub">Tỷ giá USD/VND thị trường tự do — chỉ mang tính chất tham khảo</div>
+      </div>
+      <span class="badge b-green pulse" data-i18n="bm.live">Cập nhật vừa xong</span>
+    </div>
+    <div class="bm-grid" id="bmGrid"></div>
+    <div class="gd"></div>
+    <div class="st" style="font-size:17px;margin-bottom:16px" data-i18n="bm.hist">Diễn Biến 7 Ngày</div>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="bm.th.date">Ngày</th>
+            <th data-i18n="bm.th.buy">Mua Vào (VND)</th>
+            <th data-i18n="bm.th.sell">Bán Ra (VND)</th>
+            <th data-i18n="bm.th.diff">Chênh NH</th>
+          </tr>
+        </thead>
+        <tbody id="bmHist"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION: NEWS -->
+  <section class="sec" id="s-news">
+    <div class="sh">
+      <div>
+        <div class="st" data-i18n="news.title">Tin Tức <span>Tài Chính</span></div>
+        <div class="ss" data-i18n="news.sub">Cập nhật thị trường ngoại hối và kinh tế vĩ mô</div>
+      </div>
+    </div>
+    <div class="news-grid" id="newsGrid"></div>
+  </section>
+
+  <!-- SECTION: CONVERTER -->
+  <section class="sec" id="s-conv">
+    <div class="sh">
+      <div>
+        <div class="st" data-i18n="conv.title">Công Cụ <span>Đổi Tiền</span></div>
+        <div class="ss" data-i18n="conv.sub">Quy đổi tức thì theo tỷ giá thực tế</div>
+      </div>
+    </div>
+    <div class="conv-wrap">
+      <div class="conv-card">
+        <div class="conv-row">
+          <div class="conv-lbl" data-i18n="conv.from">Tiền gốc</div>
+          <div class="conv-field">
+            <input type="number" class="conv-in" id="cAmt" value="1000000" min="0" oninput="doConv()">
+            <select class="conv-sel" id="cFrom" onchange="doConv()">
+              <option value="VND" selected>🇻🇳 VND</option>
+              <option value="USD">🇺🇸 USD</option>
+              <option value="EUR">🇪🇺 EUR</option>
+              <option value="JPY">🇯🇵 JPY</option>
+              <option value="KRW">🇰🇷 KRW</option>
+              <option value="CNY">🇨🇳 CNY</option>
+              <option value="GBP">🇬🇧 GBP</option>
+              <option value="AUD">🇦🇺 AUD</option>
+              <option value="SGD">🇸🇬 SGD</option>
+              <option value="THB">🇹🇭 THB</option>
+              <option value="HKD">🇭🇰 HKD</option>
+            </select>
+          </div>
+        </div>
+        <button class="swap-btn" onclick="swapConv()">
+          <span class="swap-icon">⇅</span>
+          <span data-i18n="conv.swap">Đảo chiều</span>
+        </button>
+        <div class="conv-row">
+          <div class="conv-lbl" data-i18n="conv.to">Tiền đích</div>
+          <div class="conv-field">
+            <input type="number" class="conv-in" id="cRes" readonly style="color:var(--gold);cursor:default">
+            <select class="conv-sel" id="cTo" onchange="doConv()">
+              <option value="USD" selected>🇺🇸 USD</option>
+              <option value="VND">🇻🇳 VND</option>
+              <option value="EUR">🇪🇺 EUR</option>
+              <option value="JPY">🇯🇵 JPY</option>
+              <option value="KRW">🇰🇷 KRW</option>
+              <option value="CNY">🇨🇳 CNY</option>
+              <option value="GBP">🇬🇧 GBP</option>
+              <option value="AUD">🇦🇺 AUD</option>
+              <option value="SGD">🇸🇬 SGD</option>
+              <option value="THB">🇹🇭 THB</option>
+              <option value="HKD">🇭🇰 HKD</option>
+            </select>
+          </div>
+        </div>
+        <div class="conv-res">
+          <div class="conv-res-lbl" data-i18n="conv.rate_lbl">Tỷ giá tham chiếu</div>
+          <div class="conv-res-val" id="cRateDisp">—</div>
+          <div class="conv-res-rate" id="cRateDetail">—</div>
+        </div>
+      </div>
+      <div class="gd"></div>
+      <div class="st" style="font-size:16px;margin-bottom:14px" data-i18n="conv.ref">Tỷ Giá Tham Chiếu</div>
+      <div class="conv-rates" id="convRates"></div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* =========================================================
+   STATE
+========================================================= */
+let RATES = {}; // { USD: 25420, EUR: 27480, ... } → X/VND
+let BANK_ROWS = [];
+let HISTORY = [];
+let lang = 'vi';
+let activeSec = 'bank';
+let dataLoaded = false;
+
+/* =========================================================
+   CURRENCIES CONFIG
+========================================================= */
+const CUR_META = {
+  USD:{flag:'🇺🇸',name:{vi:'Đô la Mỹ',ko:'미국 달러','zh-cn':'美元','zh-tw':'美元'}},
+  EUR:{flag:'🇪🇺',name:{vi:'Euro',ko:'유로','zh-cn':'欧元','zh-tw':'歐元'}},
+  JPY:{flag:'🇯🇵',name:{vi:'Yên Nhật',ko:'일본 엔','zh-cn':'日元','zh-tw':'日圓'}},
+  KRW:{flag:'🇰🇷',name:{vi:'Won Hàn Quốc',ko:'한국 원','zh-cn':'韩元','zh-tw':'韓元'}},
+  CNY:{flag:'🇨🇳',name:{vi:'Nhân dân tệ',ko:'중국 위안','zh-cn':'人民币','zh-tw':'人民幣'}},
+  GBP:{flag:'🇬🇧',name:{vi:'Bảng Anh',ko:'영국 파운드','zh-cn':'英镑','zh-tw':'英鎊'}},
+  AUD:{flag:'🇦🇺',name:{vi:'Đô la Úc',ko:'호주 달러','zh-cn':'澳元','zh-tw':'澳元'}},
+  SGD:{flag:'🇸🇬',name:{vi:'Đô la Singapore',ko:'싱가포르 달러','zh-cn':'新加坡元','zh-tw':'新加坡元'}},
+  THB:{flag:'🇹🇭',name:{vi:'Baht Thái',ko:'태국 바트','zh-cn':'泰铢','zh-tw':'泰銖'}},
+  HKD:{flag:'🇭🇰',name:{vi:'Đô la HK',ko:'홍콩 달러','zh-cn':'港元','zh-tw':'港元'}},
+  VND:{flag:'🇻🇳',name:{vi:'Đồng Việt Nam',ko:'베트남 동','zh-cn':'越南盾','zh-tw':'越南盾'}},
+};
+
+/* =========================================================
+   I18N
+========================================================= */
+const I18N = {
+  vi:{
+    'nav.bank':'Tỷ Giá NH','nav.black':'Chợ Đen','nav.news':'Tin Tức','nav.conv':'Đổi Tiền',
+    'bank.title':'Tỷ Giá Ngân Hàng','bank.all':'Tất cả ngân hàng','bank.allcur':'Tất cả ngoại tệ',
+    'bank.refresh':'Làm mới','bank.updated':'Cập nhật lúc','bank.live':'Dữ liệu thực tế',
+    'bank.mock':'Dữ liệu dự phòng','bank.err':'Không thể kết nối API',
+    'bank.th.bank':'Ngân Hàng','bank.th.cur':'Ngoại Tệ','bank.th.buy':'Mua Vào',
+    'bank.th.sell':'Bán Ra','bank.th.ref':'Tham Chiếu','bank.th.chg':'Biến Động',
+    'bm.title':'Tỷ Giá Chợ Đen','bm.sub':'Tỷ giá USD/VND thị trường tự do — chỉ mang tính chất tham khảo',
+    'bm.live':'Cập nhật vừa xong','bm.buy':'Mua Vào','bm.sell':'Bán Ra',
+    'bm.vs_yest':'so với hôm qua','bm.vs_bank':'so với ngân hàng','bm.hist':'Diễn Biến 7 Ngày',
+    'bm.th.date':'Ngày','bm.th.buy':'Mua Vào (VND)','bm.th.sell':'Bán Ra (VND)','bm.th.diff':'Chênh NH',
+    'news.title':'Tin Tức Tài Chính','news.sub':'Cập nhật thị trường ngoại hối và kinh tế vĩ mô',
+    'conv.title':'Công Cụ Đổi Tiền','conv.sub':'Quy đổi tức thì theo tỷ giá thực tế',
+    'conv.from':'Tiền gốc','conv.to':'Tiền đích','conv.swap':'Đảo chiều',
+    'conv.rate_lbl':'Tỷ giá tham chiếu','conv.ref':'Tỷ Giá Tham Chiếu',
+  },
+  ko:{
+    'nav.bank':'은행 환율','nav.black':'암시장','nav.news':'뉴스','nav.conv':'환전',
+    'bank.title':'은행 환율','bank.all':'전체 은행','bank.allcur':'전체 통화',
+    'bank.refresh':'새로고침','bank.updated':'업데이트','bank.live':'실시간 데이터',
+    'bank.mock':'임시 데이터','bank.err':'API 연결 실패',
+    'bank.th.bank':'은행','bank.th.cur':'통화','bank.th.buy':'매입률',
+    'bank.th.sell':'매출률','bank.th.ref':'기준환율','bank.th.chg':'변동',
+    'bm.title':'암시장 환율','bm.sub':'USD/VND 자유시장 환율 — 참고용으로만 사용',
+    'bm.live':'방금 업데이트됨','bm.buy':'매입','bm.sell':'매출',
+    'bm.vs_yest':'전일 대비','bm.vs_bank':'은행 대비','bm.hist':'7일간 추이',
+    'bm.th.date':'날짜','bm.th.buy':'매입 (VND)','bm.th.sell':'매출 (VND)','bm.th.diff':'은행 차이',
+    'news.title':'금융 뉴스','news.sub':'외환 시장 및 거시경제 업데이트',
+    'conv.title':'환율 계산기','conv.sub':'실시간 환율 기준 즉시 환전',
+    'conv.from':'출발 통화','conv.to':'도착 통화','conv.swap':'통화 교환',
+    'conv.rate_lbl':'참조 환율','conv.ref':'주요 환율',
+  },
+  'zh-cn':{
+    'nav.bank':'银行汇率','nav.black':'黑市汇率','nav.news':'新闻','nav.conv':'汇率换算',
+    'bank.title':'银行汇率','bank.all':'所有银行','bank.allcur':'所有货币',
+    'bank.refresh':'刷新','bank.updated':'更新于','bank.live':'实时数据',
+    'bank.mock':'备用数据','bank.err':'无法连接API',
+    'bank.th.bank':'银行','bank.th.cur':'货币','bank.th.buy':'买入价',
+    'bank.th.sell':'卖出价','bank.th.ref':'参考汇率','bank.th.chg':'涨跌',
+    'bm.title':'黑市汇率','bm.sub':'USD/VND 自由市场汇率 — 仅供参考',
+    'bm.live':'刚刚更新','bm.buy':'买入','bm.sell':'卖出',
+    'bm.vs_yest':'较昨日','bm.vs_bank':'较银行','bm.hist':'7日走势',
+    'bm.th.date':'日期','bm.th.buy':'买入 (VND)','bm.th.sell':'卖出 (VND)','bm.th.diff':'与银行差',
+    'news.title':'财经新闻','news.sub':'外汇市场与宏观经济动态',
+    'conv.title':'汇率换算','conv.sub':'基于实时汇率即时换算',
+    'conv.from':'原始货币','conv.to':'目标货币','conv.swap':'货币互换',
+    'conv.rate_lbl':'参考汇率','conv.ref':'参考汇率',
+  },
+  'zh-tw':{
+    'nav.bank':'銀行匯率','nav.black':'黑市匯率','nav.news':'新聞','nav.conv':'匯率換算',
+    'bank.title':'銀行匯率','bank.all':'所有銀行','bank.allcur':'所有貨幣',
+    'bank.refresh':'重新整理','bank.updated':'更新於','bank.live':'即時數據',
+    'bank.mock':'備用數據','bank.err':'無法連接API',
+    'bank.th.bank':'銀行','bank.th.cur':'貨幣','bank.th.buy':'買入價',
+    'bank.th.sell':'賣出價','bank.th.ref':'參考匯率','bank.th.chg':'漲跌',
+    'bm.title':'黑市匯率','bm.sub':'USD/VND 自由市場匯率 — 僅供參考',
+    'bm.live':'剛剛更新','bm.buy':'買入','bm.sell':'賣出',
+    'bm.vs_yest':'較昨日','bm.vs_bank':'較銀行','bm.hist':'7日走勢',
+    'bm.th.date':'日期','bm.th.buy':'買入 (VND)','bm.th.sell':'賣出 (VND)','bm.th.diff':'與銀行差',
+    'news.title':'財經新聞','news.sub':'外匯市場與總體經濟動態',
+    'conv.title':'匯率換算','conv.sub':'基於即時匯率即時換算',
+    'conv.from':'原始貨幣','conv.to':'目標貨幣','conv.swap':'貨幣互換',
+    'conv.rate_lbl':'參考匯率','conv.ref':'參考匯率',
+  },
+};
+
+function t(k){ return (I18N[lang]||I18N.vi)[k] || I18N.vi[k] || k; }
+function applyLang(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n'), v=t(k);
+    if(!v) return;
+    if(el.classList.contains('st') && el.querySelector('span')){
+      const words=v.split(' ');
+      const last=words.pop();
+      el.innerHTML=words.join(' ')+' <span>'+last+'</span>';
+    } else { el.textContent=v; }
+  });
+}
+
+/* =========================================================
+   MOCK DATA (fallback khi API lỗi)
+========================================================= */
+const MOCK_BASE = {USD:25420,EUR:27480,JPY:168,KRW:19,CNY:3512,GBP:32100,AUD:16380,SGD:18750,THB:704,HKD:3260};
+const BANKS_CFG = [
+  {id:'Vietcombank',color:'#009943',spread:.005},
+  {id:'BIDV',color:'#00529B',spread:.006},
+  {id:'Techcombank',color:'#E31E24',spread:.007},
+  {id:'MB Bank',color:'#00549A',spread:.006},
+  {id:'ACB',color:'#0066B2',spread:.007},
+  {id:'VPBank',color:'#006C35',spread:.008},
+  {id:'Agribank',color:'#C41E3A',spread:.006},
+];
+const MAIN_CURS = ['USD','EUR','JPY','KRW','CNY','GBP','AUD'];
+
+function genMockData(){
+  const ratesVND={};
+  for(const[k,v] of Object.entries(MOCK_BASE)) ratesVND[k]=Math.round(v*(1+(Math.random()-.5)*.002));
+  const bankRows=[];
+  for(const b of BANKS_CFG){
+    for(const c of MAIN_CURS){
+      const ref=ratesVND[c]; if(!ref) continue;
+      const v=1+(Math.random()-.5)*.001;
+      const r=Math.round(ref*v);
+      bankRows.push({bank:b.id,bankColor:b.color,cur:c,
+        buy:Math.round(r*(1-b.spread/2)),sell:Math.round(r*(1+b.spread/2)),
+        ref:r,change:Math.round((Math.random()-.48)*ref*.002)});
+    }
+  }
+  return {ratesVND,bankRows,source:'mock'};
+}
+
+/* =========================================================
+   LOAD RATES FROM API
+========================================================= */
+async function loadRates(force=false){
+  const btn=document.getElementById('refreshBtn');
+  const dot=document.getElementById('statusDot');
+  const txt=document.getElementById('statusTxt');
+
+  btn.classList.add('spinning');
+  dot.className='status-dot loading';
+  txt.textContent='Đang tải dữ liệu thực tế...';
+
+  try{
+    const res=await fetch('/api/rates',{cache: force?'no-cache':'default'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    if(data.error) throw new Error(data.error);
+
+    RATES=data.ratesVND||{};
+    RATES.VND=1;
+    BANK_ROWS=data.bankRows||[];
+
+    dot.className='status-dot';
+    const src=data.source==='live'?t('bank.live'):t('bank.mock');
+    txt.textContent=`${t('bank.updated')} ${new Date().toLocaleTimeString('vi-VN')} · ${src}`;
+    document.getElementById('bank-ts').textContent=txt.textContent;
+    dataLoaded=true;
+
+  }catch(err){
+    console.warn('API failed, using mock data:', err.message);
+    const mock=genMockData();
+    RATES=mock.ratesVND; RATES.VND=1;
+    BANK_ROWS=mock.bankRows;
+
+    dot.className='status-dot err';
+    txt.innerHTML=`⚠ ${t('bank.err')} — ${t('bank.mock')}`;
+    dataLoaded=true;
+  }
+
+  btn.classList.remove('spinning');
+  renderBank();
+  renderStats();
+  doConv();
+  renderConvRates();
+}
+
+async function loadHistory(){
+  try{
+    const res=await fetch('/api/history');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    HISTORY=data.history||[];
+  }catch{
+    HISTORY=[];
+  }
+}
+
+/* =========================================================
+   RENDER: BANK TABLE
+========================================================= */
+function fmt(n,dec=0){
+  if(n===undefined||n===null||isNaN(n)) return '—';
+  return n.toLocaleString('vi-VN',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+}
+function initials(name){ return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
+function isSmall(c){ return c==='JPY'||c==='KRW'; }
+
+function renderStats(){
+  const bar=document.getElementById('statsBar');
+  if(!Object.keys(RATES).length){bar.innerHTML='';return;}
+  bar.innerHTML=['USD','EUR','JPY','KRW'].map(c=>{
+    const r=RATES[c]; if(!r) return '';
+    const chg=(Math.random()-.48)*r*.001;
+    const pct=(chg/r*100).toFixed(3);
+    const up=chg>=0;
+    const dec=isSmall(c)?1:0;
+    return `<div class="chip">
+      <div class="chip-lbl">${CUR_META[c]?.flag||''} ${c}/VND</div>
+      <div class="chip-val">${fmt(r,dec)}</div>
+      <div class="chip-chg ${up?'up':'dn'}">${up?'▲':'▼'} ${Math.abs(pct)}%</div>
+    </div>`;
+  }).join('');
+}
+
+function renderBank(){
+  const bf=document.getElementById('bankFilter').value;
+  const cf=document.getElementById('curFilter').value;
+  const rows=BANK_ROWS.filter(r=>(bf==='all'||r.bank===bf)&&(cf==='all'||r.cur===cf));
+  const tbody=document.getElementById('bankBody');
+  if(!rows.length){
+    tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted)">Không có dữ liệu</td></tr>`;
+    return;
+  }
+  tbody.innerHTML=rows.map(r=>{
+    const up=r.change>=0, dec=isSmall(r.cur)?1:0;
+    const m=CUR_META[r.cur]||{};
+    return `<tr>
+      <td><div class="bank-badge">
+        <div class="blogo" style="background:${r.bankColor}">${initials(r.bank)}</div>
+        <span style="font-weight:500">${r.bank}</span>
+      </div></td>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <span class="cflag">${m.flag||''}</span>
+        <div><div class="ccode">${r.cur}</div><div class="cname">${(m.name||{})[lang]||''}</div></div>
+      </div></td>
+      <td class="buy">${fmt(r.buy,dec)}</td>
+      <td class="sell">${fmt(r.sell,dec)}</td>
+      <td class="ref">${fmt(r.ref,dec)}</td>
+      <td class="${up?'up':'dn'}" style="font-family:var(--mono);font-size:12px">
+        ${up?'▲':'▼'} ${fmt(Math.abs(r.change),dec>0?2:0)}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* =========================================================
+   RENDER: BLACK MARKET
+========================================================= */
+function renderBM(){
+  const base=RATES.USD||25420;
+  const bmBuy=Math.round(base*1.004*(1+(Math.random()-.5)*.0005));
+  const bmSell=Math.round(base*1.009*(1+(Math.random()-.5)*.0005));
+  const bankBuy=Math.round(base*.995);
+  const bankSell=Math.round(base*1.005);
+  const yestB=Math.round(bmBuy*(1+(Math.random()*.006-.001)));
+  const yestS=Math.round(bmSell*(1+(Math.random()*.006-.001)));
+  const buyUp=bmBuy>=yestB, sellUp=bmSell>=yestS;
+  const ts=new Date().toLocaleString('vi-VN');
+
+  document.getElementById('bmGrid').innerHTML=`
+    <div class="bm-card">
+      <div class="bm-lbl">${t('bm.buy')} — USD → VND</div>
+      <div class="bm-val">${fmt(bmBuy)}<span class="bm-unit">₫</span></div>
+      <div class="bm-chg ${buyUp?'up':'dn'}">${buyUp?'▲':'▼'} ${fmt(Math.abs(bmBuy-yestB))} <span style="color:var(--dim)">${t('bm.vs_yest')}</span></div>
+      <div class="bm-ts">🕐 ${ts} · ${t('bm.vs_bank')}: <span style="color:var(--green)">+${fmt(bmBuy-bankBuy)}</span></div>
+    </div>
+    <div class="bm-card">
+      <div class="bm-lbl">${t('bm.sell')} — VND → USD</div>
+      <div class="bm-val">${fmt(bmSell)}<span class="bm-unit">₫</span></div>
+      <div class="bm-chg ${sellUp?'up':'dn'}">${sellUp?'▲':'▼'} ${fmt(Math.abs(bmSell-yestS))} <span style="color:var(--dim)">${t('bm.vs_yest')}</span></div>
+      <div class="bm-ts">🕐 ${ts} · ${t('bm.vs_bank')}: <span style="color:var(--red)">+${fmt(bmSell-bankSell)}</span></div>
+    </div>
+    <div class="bm-card">
+      <div class="bm-lbl">Spread</div>
+      <div class="bm-val">${fmt(bmSell-bmBuy)}<span class="bm-unit">₫</span></div>
+      <div class="bm-chg" style="color:var(--muted)">= ${((bmSell-bmBuy)/bmBuy*100).toFixed(2)}% margin</div>
+      <div class="bm-ts">Chênh lệch mua / bán</div>
+    </div>`;
+
+  // History rows - dùng API history nếu có, không thì mock
+  const hist=document.getElementById('bmHist');
+  hist.innerHTML=Array.from({length:7},(_,i)=>{
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const label=d.toLocaleDateString('vi-VN');
+    // Dùng HISTORY data nếu có
+    const hday=HISTORY[i];
+    let hBase=base;
+    if(hday?.rates?.USD) hBase=hday.rates.USD;
+    const b=Math.round(hBase*1.004*(1+(Math.random()-.5)*.003));
+    const s=Math.round(hBase*1.009*(1+(Math.random()-.5)*.003));
+    const diff=Math.round((b+s)/2-hBase);
+    return `<tr>
+      <td style="color:${i===0?'var(--gold)':'var(--text)'};font-weight:${i===0?600:400}">
+        ${label}${i===0?' <span class="badge b-gold" style="font-size:10px;padding:1px 6px">Hôm nay</span>':''}
+      </td>
+      <td class="buy">${fmt(b)}</td>
+      <td class="sell">${fmt(s)}</td>
+      <td style="color:var(--muted);font-family:var(--mono);font-size:12px">+${fmt(diff)}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* =========================================================
+   NEWS DATA
+========================================================= */
+const NEWS={
+  vi:[
+    {e:'📈',tag:'Ngoại hối',src:'VnEconomy',time:'15 phút trước',
+     title:'Đồng USD giảm nhẹ sau tín hiệu Fed giữ lãi suất thêm một quý',
+     summ:'Tỷ giá USD/VND trên liên ngân hàng giảm khoảng 50 đồng sau khi Fed phát tín hiệu tạm ngừng chu kỳ tăng lãi suất. Thị trường kỳ vọng áp lực tỷ giá sẽ dịu lại trong các tháng tới.'},
+    {e:'🏦',tag:'Ngân hàng',src:'CafeF',time:'1 giờ trước',
+     title:'Vietcombank điều chỉnh tỷ giá USD, EUR theo biến động thị trường quốc tế',
+     summ:'Vietcombank thông báo điều chỉnh bảng tỷ giá mua bán các ngoại tệ chính, đặc biệt USD và EUR, theo sát diễn biến thị trường và chỉ đạo của Ngân hàng Nhà nước.'},
+    {e:'🇰🇷',tag:'Châu Á',src:'Bloomberg VN',time:'2 giờ trước',
+     title:'Won Hàn Quốc phục hồi mạnh nhờ xuất khẩu chip bán dẫn tăng vọt 28%',
+     summ:'Dữ liệu xuất khẩu chip của Hàn Quốc tăng 28% so với cùng kỳ, kéo KRW tăng gần 1.2% so với USD trong phiên giao dịch châu Á sáng nay.'},
+    {e:'🇨🇳',tag:'Trung Quốc',src:'Reuters',time:'3 giờ trước',
+     title:'PBOC bơm 500 tỷ NDT vào hệ thống, giữ CNY ổn định trước kỳ nghỉ lễ',
+     summ:'Ngân hàng Nhân dân Trung Quốc tiến hành nghiệp vụ thị trường mở quy mô lớn, ổn định thanh khoản và giữ đồng nhân dân tệ trong biên độ mục tiêu.'},
+    {e:'💰',tag:'Vàng',src:'Thanh Niên',time:'4 giờ trước',
+     title:'Vàng SJC neo cao, chênh lệch với vàng thế giới thu hẹp còn 1.2 triệu đồng',
+     summ:'Sau các đợt can thiệp của NHNN, khoảng cách giữa vàng SJC và vàng thế giới quy đổi đã thu hẹp đáng kể, nhưng vẫn duy trì ở mức cao so với thông lệ quốc tế.'},
+    {e:'📊',tag:'Vĩ mô',src:'VnExpress',time:'6 giờ trước',
+     title:'GDP Việt Nam quý I tăng 6.72%, xuất siêu 8.1 tỷ USD — tỷ giá được hỗ trợ',
+     summ:'Số liệu kinh tế vĩ mô tích cực cùng thặng dư thương mại lớn tạo điều kiện thuận lợi để NHNN duy trì tỷ giá ổn định, dự trữ ngoại hối tiếp tục được củng cố.'},
+    {e:'🏛️',tag:'Chính sách',src:'TTXVN',time:'8 giờ trước',
+     title:'NHNN niêm yết tỷ giá trung tâm USD/VND ở mức 24,250 — tăng 15 đồng',
+     summ:'Ngân hàng Nhà nước Việt Nam công bố tỷ giá trung tâm phiên giao dịch mới nhất, tăng 15 đồng so với phiên hôm qua trong bối cảnh đồng USD toàn cầu có phần tăng nhẹ.'},
+    {e:'🌏',tag:'Phân tích',src:'Đầu tư Online',time:'10 giờ trước',
+     title:'Chuyên gia: EUR/USD có thể về vùng 1.09 khi ECB phát tín hiệu cắt giảm lãi suất',
+     summ:'Các nhà phân tích nhận định áp lực từ lạm phát Eurozone giảm nhanh hơn dự kiến, cùng khả năng ECB cắt giảm lãi suất sớm, sẽ tạo sức ép lên EUR trong tháng tới.'},
+  ],
+  ko:[
+    {e:'📈',tag:'외환',src:'한국경제',time:'15분 전',title:'Fed 금리 동결 시사에 달러 약세... 원/달러 1,340원대 하락',summ:'연방준비제도가 금리를 동결할 것이라는 신호를 보내면서 달러화가 주요 통화 대비 약세를 보이고 있습니다.'},
+    {e:'🏦',tag:'은행',src:'매일경제',time:'1시간 전',title:'국내 시중은행, 엔화 환전 수수료 인하 경쟁 시작',summ:'일본 여행객 증가에 따라 주요 은행들이 엔화 환전 수수료를 잇따라 인하, 일부 비대면 채널에서 50% 우대 혜택을 제공합니다.'},
+    {e:'🇻🇳',tag:'베트남',src:'아시아경제',time:'2시간 전',title:'베트남 중앙은행, 동화 안정 위한 외환 시장 개입 강화',summ:'베트남 국가은행(SBV)이 달러 강세에 대응해 시장 개입을 확대, 동화 절하 폭을 2% 이내로 제한하겠다는 방침을 밝혔습니다.'},
+    {e:'💴',tag:'일본',src:'연합뉴스',time:'4시간 전',title:'엔화 150엔 재돌파... 일본은행 구두 개입에도 약세 지속',summ:'달러/엔 환율이 심리적 저항선 150엔을 재차 돌파, 일본은행의 구두 개입에도 불구하고 엔화 약세가 이어지고 있습니다.'},
+    {e:'📊',tag:'분석',src:'Bloomberg KR',time:'6시간 전',title:'원화 연초 대비 10% 절하... 수출은 호재, 수입 물가는 우려',summ:'절하된 원화가 수출 기업 경쟁력을 높이는 반면, 에너지·원자재 수입 비용 증가로 인한 물가 압력도 가중될 것으로 분석됩니다.'},
+    {e:'🌏',tag:'아시아',src:'Reuters KR',time:'8시간 전',title:'아시아 통화 일제 강세... 달러 인덱스 103선 붕괴',summ:'미국 CPI가 예상치를 하회하면서 달러 인덱스가 103선 아래로 하락, 원화·엔화·위안화 등 아시아 주요 통화들이 일제히 강세를 나타냈습니다.'},
+  ],
+  'zh-cn':[
+    {e:'📈',tag:'外汇',src:'财联社',time:'15分钟前',title:'美联储维持利率不变信号明确，美元指数跌破103',summ:'美联储主席鲍威尔暗示本月会议将维持利率不变，美元指数随即走软，人民币汇率小幅回升至7.23附近。'},
+    {e:'🏦',tag:'银行',src:'第一财经',time:'1小时前',title:'国有大行集体下调存款利率，有助人民币汇率稳定',summ:'工农中建四大国有银行宣布下调各期限存款利率，有助于银行降低负债成本，并为人民币汇率稳定创造条件。'},
+    {e:'🇻🇳',tag:'东南亚',src:'新华财经',time:'2小时前',title:'越南央行加大干预力度，越盾兑美元保持相对稳定',summ:'越南国家银行通过公开市场操作注入流动性，同时收紧黑市外汇管控，越盾兑美元汇率保持在25,400-25,500区间。'},
+    {e:'💱',tag:'政策',src:'证券时报',time:'4小时前',title:'央行上调外汇存款准备金率，稳汇率工具箱持续扩充',summ:'中国人民银行宣布上调金融机构外汇存款准备金率至6%，彰显监管层稳定人民币汇率的坚定决心。'},
+    {e:'📊',tag:'分析',src:'华尔街见闻',time:'6小时前',title:'人民币离岸汇率CNH与在岸CNY价差扩大，套利空间引关注',summ:'CNH与CNY的价差近期扩大至300-400个基点，分析人士认为这反映了市场对人民币汇率走势的分歧加大。'},
+    {e:'🌏',tag:'宏观',src:'经济观察报',time:'8小时前',title:'亚洲货币集体走强，日元领涨，区域外汇储备规模创新高',summ:'在美元走软的背景下，亚洲主要货币普遍走强，东南亚各国央行借机补充外汇储备，区域总储备规模创历史新高。'},
+  ],
+  'zh-tw':[
+    {e:'📈',tag:'外匯',src:'工商時報',time:'15分鐘前',title:'聯準會維持利率確認，美元回落，新台幣升至30.8',summ:'聯準會主席鮑爾確認維持利率不變，美元指數應聲下跌，新台幣兌美元匯率升至30.8附近，為近兩個月高點。'},
+    {e:'🏦',tag:'銀行',src:'經濟日報',time:'1小時前',title:'台銀、兆豐調整越南盾換匯牌告，旅遊旺季需求升溫',summ:'因越南旅遊需求持續增長，多家本國銀行調整VND換匯牌告，並提醒民眾出發前預先換匯以取得較優匯率。'},
+    {e:'🇻🇳',tag:'越南',src:'中央社',time:'2小時前',title:'越南Q1 GDP成長6.72%，外貿順差81億美元，匯率壓力舒緩',summ:'越南優於預期的經濟數據帶動越南盾走勢趨穩，龐大的貿易順差為越南國家銀行補充外匯儲備提供有力支撐。'},
+    {e:'💴',tag:'日本',src:'Reuters TW',time:'3小時前',title:'日圓再跌破150關口，日銀言辭干預效果有限',summ:'美元/日圓再度突破150心理關口，日本銀行官員的言辭干預未能有效阻止日圓貶勢，市場觀望實際操作時機。'},
+    {e:'📊',tag:'分析',src:'鉅亨網',time:'5小時前',title:'人民幣離岸匯率走弱，台商調整匯兌避險策略應對',summ:'離岸人民幣匯率走弱，在越南、東南亞設廠的台商積極調整匯兌避險策略，降低人民幣貶值對業績衝擊。'},
+    {e:'🌏',tag:'總體',src:'天下雜誌',time:'7小時前',title:'東協匯率分化：越南盾穩，泰銖承壓，投資者謹慎觀望',summ:'東協各國貨幣走勢分化，越南盾因出口強勁保持穩定，泰銖受政治不確定性持續承壓，投資者對匯率風險評估趨謹慎。'},
+  ],
+};
+
+function renderNews(){
+  const data=NEWS[lang]||NEWS.vi;
+  document.getElementById('newsGrid').innerHTML=data.map(n=>`
+    <div class="nc">
+      <div class="nth">${n.e}</div>
+      <div class="nb">
+        <div class="nmeta"><span class="nsrc">${n.src}</span><span class="ntime">${n.time}</span></div>
+        <div class="ntitle">${n.title}</div>
+        <div class="nsumm">${n.summ}</div>
+        <span class="ntag">${n.tag}</span>
+      </div>
+    </div>`).join('');
+}
+
+/* =========================================================
+   CONVERTER
+========================================================= */
+function doConv(){
+  const amt=parseFloat(document.getElementById('cAmt').value)||0;
+  const from=document.getElementById('cFrom').value;
+  const to=document.getElementById('cTo').value;
+  const fRate=RATES[from]||MOCK_BASE[from]||1;
+  const tRate=RATES[to]||MOCK_BASE[to]||1;
+  const res=amt*(fRate/tRate);
+  const unit=fRate/tRate;
+  const dec=(to==='VND'||to==='JPY'||to==='KRW')?0:4;
+  document.getElementById('cRes').value=res.toFixed(to==='VND'?0:2);
+  document.getElementById('cRateDisp').textContent=`1 ${from} = ${unit.toFixed(dec)} ${to}`;
+  document.getElementById('cRateDetail').textContent=`1 ${to} = ${(1/unit).toFixed(6)} ${from}`;
+}
+function swapConv(){
+  const f=document.getElementById('cFrom'), t2=document.getElementById('cTo');
+  [f.value,t2.value]=[t2.value,f.value]; doConv();
+}
+function renderConvRates(){
+  const curs=['USD','EUR','JPY','KRW','CNY','GBP','AUD','SGD','THB','HKD'];
+  document.getElementById('convRates').innerHTML=curs.map(c=>{
+    const r=RATES[c]||MOCK_BASE[c]||0;
+    const dec=isSmall(c)?1:0;
+    return `<div class="cri">
+      <div class="cri-pair">${CUR_META[c]?.flag||''} ${c}/VND</div>
+      <div class="cri-val">${fmt(r,dec)}</div>
+    </div>`;
+  }).join('');
+}
+
+/* =========================================================
+   NAV
+========================================================= */
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    activeSec=btn.dataset.sec;
+    document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+    document.getElementById('s-'+activeSec).classList.add('on');
+    if(activeSec==='black') renderBM();
+    if(activeSec==='news') renderNews();
+    if(activeSec==='conv'){ doConv(); renderConvRates(); }
+  });
+});
+document.querySelectorAll('.lbtn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.lbtn').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    lang=btn.dataset.lang;
+    applyLang();
+    if(activeSec==='bank') renderBank();
+    if(activeSec==='black') renderBM();
+    if(activeSec==='news') renderNews();
+  });
+});
+
+/* =========================================================
+   INIT
+========================================================= */
+async function init(){
+  applyLang();
+  await Promise.all([loadRates(), loadHistory()]);
+  renderBM();
+  renderNews();
+}
+init();
+
+// Auto-refresh mỗi 5 phút
+setInterval(()=>{ if(activeSec==='bank') loadRates(); }, 5*60*1000);
+</script>
+</body>
+</html>
