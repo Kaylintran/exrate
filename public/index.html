@@ -217,6 +217,43 @@ tbody td{padding:12px 16px;white-space:nowrap;vertical-align:middle}
 /* ===== DIVIDER ===== */
 .gd{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:28px 0;opacity:.25}
 
+/* ===== NEWS MODAL ===== */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);
+  z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;
+  opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  width:100%;max-width:720px;max-height:88vh;overflow-y:auto;
+  transform:translateY(20px);transition:transform .25s;position:relative}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-header{padding:24px 24px 0;position:sticky;top:0;background:var(--surface);
+  border-bottom:1px solid var(--border);padding-bottom:16px;z-index:2}
+.modal-thumb{height:180px;background:linear-gradient(135deg,var(--surface2),var(--bg));
+  display:flex;align-items:center;justify-content:center;font-size:64px;border-radius:12px;margin-bottom:20px}
+.modal-meta{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.modal-src{font-size:12px;color:var(--gold);font-weight:600;letter-spacing:.5px}
+.modal-time{font-size:12px;color:var(--dim)}
+.modal-tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;
+  font-weight:600;letter-spacing:.5px;background:var(--blue-dim);color:var(--blue)}
+.modal-title{font-size:20px;font-weight:700;line-height:1.4;color:var(--text);margin-bottom:4px}
+.modal-close{position:absolute;top:16px;right:16px;width:32px;height:32px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  color:var(--muted);font-size:16px;transition:all .2s;z-index:3}
+.modal-close:hover{background:var(--red-dim);color:var(--red);border-color:var(--red)}
+.modal-body{padding:20px 24px 28px}
+.modal-content p{font-size:15px;color:var(--muted);line-height:1.8;margin-bottom:14px}
+.modal-content p:first-child{color:var(--text);font-size:16px}
+.modal-divider{height:1px;background:var(--border);margin:16px 0}
+.modal-footer{display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px 20px;gap:12px;flex-wrap:wrap}
+.modal-disclaimer{font-size:11px;color:var(--dim);font-style:italic}
+.modal-share{display:flex;gap:8px}
+.modal-btn{padding:8px 16px;border-radius:var(--rs);font-size:13px;font-weight:500;
+  border:1px solid var(--border);background:var(--surface2);color:var(--muted);
+  cursor:pointer;transition:all .2s}
+.modal-btn:hover{border-color:var(--gold);color:var(--gold)}
+
 /* ===== ERROR STATE ===== */
 .err-box{background:var(--red-dim);border:1px solid rgba(239,68,68,.2);border-radius:var(--rs);
   padding:16px 20px;color:var(--red);font-size:14px;display:flex;align-items:center;gap:10px}
@@ -423,6 +460,32 @@ tbody td{padding:12px 16px;white-space:nowrap;vertical-align:middle}
   </section>
 
 </main>
+
+<!-- ===== NEWS MODAL ===== -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modalBox">
+    <button class="modal-close" onclick="closeModal(null)">✕</button>
+    <div class="modal-header">
+      <div class="modal-thumb" id="mThumb"></div>
+      <div class="modal-meta">
+        <span class="modal-src" id="mSrc"></span>
+        <span class="modal-time" id="mTime"></span>
+        <span class="modal-tag" id="mTag"></span>
+      </div>
+      <div class="modal-title" id="mTitle"></div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-content" id="mContent"></div>
+      <div class="modal-divider"></div>
+    </div>
+    <div class="modal-footer">
+      <span class="modal-disclaimer" id="mDisclaimer">Nội dung mang tính chất tham khảo</span>
+      <div class="modal-share">
+        <button class="modal-btn" onclick="closeModal(null)" id="mCloseBtn">✕ Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 /* =========================================================
@@ -746,59 +809,121 @@ const NEWS={
   vi:[
     {e:'📈',tag:'Ngoại hối',src:'VnEconomy',time:'15 phút trước',
      title:'Đồng USD giảm nhẹ sau tín hiệu Fed giữ lãi suất thêm một quý',
-     summ:'Tỷ giá USD/VND trên liên ngân hàng giảm khoảng 50 đồng sau khi Fed phát tín hiệu tạm ngừng chu kỳ tăng lãi suất. Thị trường kỳ vọng áp lực tỷ giá sẽ dịu lại trong các tháng tới.'},
+     summ:'Tỷ giá USD/VND trên liên ngân hàng giảm khoảng 50 đồng sau khi Fed phát tín hiệu tạm ngừng chu kỳ tăng lãi suất.',
+     body:`<p>Tỷ giá USD/VND trên thị trường liên ngân hàng giảm khoảng 50 đồng trong phiên giao dịch sáng nay, sau khi Cục Dự trữ Liên bang Mỹ (Fed) phát tín hiệu rõ ràng về việc tạm ngừng chu kỳ tăng lãi suất trong ít nhất một quý tới.</p><p>Tại cuộc họp báo sau phiên họp chính sách, Chủ tịch Fed Jerome Powell cho biết dữ liệu lạm phát đang đi đúng hướng và ủy ban sẽ "kiên nhẫn" trước khi đưa ra bất kỳ quyết định nào về việc thay đổi lãi suất. Điều này được thị trường hiểu là tín hiệu "dovish", khiến đồng USD suy yếu trên toàn cầu.</p><p>Tại Việt Nam, Ngân hàng Nhà nước (NHNN) niêm yết tỷ giá trung tâm USD/VND ở mức 24,250 đồng, tăng nhẹ 10 đồng so với phiên trước. Các ngân hàng thương mại điều chỉnh tỷ giá mua vào và bán ra theo sát diễn biến thị trường quốc tế.</p><p>Các chuyên gia kinh tế nhận định áp lực tỷ giá lên đồng Việt Nam sẽ dịu lại trong ngắn hạn nếu Fed không có thêm động thái tăng lãi suất. Tuy nhiên, yếu tố rủi ro vẫn còn đó khi dữ liệu kinh tế Mỹ tiếp tục tốt hơn dự báo.</p>`},
     {e:'🏦',tag:'Ngân hàng',src:'CafeF',time:'1 giờ trước',
      title:'Vietcombank điều chỉnh tỷ giá USD, EUR theo biến động thị trường quốc tế',
-     summ:'Vietcombank thông báo điều chỉnh bảng tỷ giá mua bán các ngoại tệ chính, đặc biệt USD và EUR, theo sát diễn biến thị trường và chỉ đạo của Ngân hàng Nhà nước.'},
+     summ:'Vietcombank thông báo điều chỉnh bảng tỷ giá mua bán các ngoại tệ chính theo sát diễn biến thị trường.',
+     body:`<p>Vietcombank vừa thông báo điều chỉnh bảng tỷ giá mua bán các ngoại tệ chính, đặc biệt là USD và EUR, nhằm phản ánh kịp thời các biến động trên thị trường tài chính quốc tế và tuân thủ chỉ đạo của Ngân hàng Nhà nước Việt Nam.</p><p>Theo bảng tỷ giá mới nhất, tỷ giá mua vào USD tại Vietcombank được điều chỉnh lên mức 25,358 đồng và tỷ giá bán ra là 25,473 đồng. Đối với EUR, tỷ giá mua vào là 27,412 đồng và bán ra là 27,548 đồng.</p><p>Đại diện Vietcombank cho biết việc điều chỉnh tỷ giá này nhằm đảm bảo tính cạnh tranh và phản ánh đúng giá trị thực của các đồng ngoại tệ trong bối cảnh thị trường quốc tế có nhiều biến động. Ngân hàng cam kết cung cấp dịch vụ đổi ngoại tệ với mức giá cạnh tranh nhất cho khách hàng.</p><p>Khách hàng có nhu cầu mua bán ngoại tệ được khuyến nghị liên hệ trực tiếp với chi nhánh Vietcombank gần nhất hoặc sử dụng dịch vụ ngân hàng điện tử để được hưởng mức tỷ giá ưu đãi.</p>`},
     {e:'🇰🇷',tag:'Châu Á',src:'Bloomberg VN',time:'2 giờ trước',
      title:'Won Hàn Quốc phục hồi mạnh nhờ xuất khẩu chip bán dẫn tăng vọt 28%',
-     summ:'Dữ liệu xuất khẩu chip của Hàn Quốc tăng 28% so với cùng kỳ, kéo KRW tăng gần 1.2% so với USD trong phiên giao dịch châu Á sáng nay.'},
+     summ:'Dữ liệu xuất khẩu chip của Hàn Quốc tăng 28% so với cùng kỳ, kéo KRW tăng gần 1.2% so với USD.',
+     body:`<p>Đồng Won Hàn Quốc (KRW) phục hồi mạnh mẽ trong phiên giao dịch châu Á sáng nay, tăng gần 1.2% so với USD sau khi số liệu xuất khẩu chip bán dẫn tháng vừa qua của Hàn Quốc tăng vọt 28% so với cùng kỳ năm ngoái.</p><p>Theo dữ liệu từ Bộ Thương mại Hàn Quốc, xuất khẩu chip nhớ DRAM và NAND Flash đạt mức cao nhất trong 18 tháng qua, được thúc đẩy bởi nhu cầu mạnh mẽ từ các trung tâm dữ liệu AI trên toàn cầu. Samsung Electronics và SK Hynix là hai doanh nghiệp đóng góp chủ yếu vào con số ấn tượng này.</p><p>Các nhà phân tích tại Bloomberg Economics nhận định đà phục hồi của ngành bán dẫn Hàn Quốc sẽ còn tiếp tục trong nửa cuối năm nay, đặc biệt khi nhu cầu chip AI không có dấu hiệu hạ nhiệt. Điều này tạo nền tảng vững chắc cho đồng KRW duy trì đà tăng.</p><p>Tại thị trường Việt Nam, tỷ giá KRW/VND dao động quanh mức 19 đồng/1 Won, với xu hướng tăng nhẹ theo diễn biến tích cực từ thị trường Seoul.</p>`},
     {e:'🇨🇳',tag:'Trung Quốc',src:'Reuters',time:'3 giờ trước',
      title:'PBOC bơm 500 tỷ NDT vào hệ thống, giữ CNY ổn định trước kỳ nghỉ lễ',
-     summ:'Ngân hàng Nhân dân Trung Quốc tiến hành nghiệp vụ thị trường mở quy mô lớn, ổn định thanh khoản và giữ đồng nhân dân tệ trong biên độ mục tiêu.'},
+     summ:'Ngân hàng Nhân dân Trung Quốc tiến hành nghiệp vụ thị trường mở quy mô lớn để ổn định thanh khoản.',
+     body:`<p>Ngân hàng Nhân dân Trung Quốc (PBOC) đã bơm 500 tỷ nhân dân tệ (NDT) vào hệ thống tài chính thông qua nghiệp vụ thị trường mở (OMO) trong tuần này, đây là lần bơm vốn lớn nhất trong quý, nhằm ổn định thanh khoản trước kỳ nghỉ lễ dài ngày sắp tới.</p><p>Động thái này giúp giữ đồng nhân dân tệ (CNY) trong biên độ mục tiêu mà PBOC đặt ra, tránh tình trạng biến động mạnh do thanh khoản thiếu hụt. Tỷ giá USD/CNY hiện dao động quanh mức 7.23-7.25.</p><p>Các chuyên gia tại Reuters nhận định PBOC đang thực hiện chính sách tiền tệ theo kiểu "tinh chỉnh linh hoạt", không tăng mạnh cung tiền nhưng vẫn đảm bảo thanh khoản đủ cho nền kinh tế hoạt động trơn tru. Đây là cách tiếp cận khác biệt so với các ngân hàng trung ương lớn khác đang thắt chặt chính sách.</p><p>Đối với tỷ giá CNY/VND tại Việt Nam, diễn biến ổn định của đồng nhân dân tệ giúp tỷ giá này duy trì ở mức khoảng 3,500 đồng, thuận lợi cho hoạt động thương mại hai nước vốn rất sôi động.</p>`},
     {e:'💰',tag:'Vàng',src:'Thanh Niên',time:'4 giờ trước',
      title:'Vàng SJC neo cao, chênh lệch với vàng thế giới thu hẹp còn 1.2 triệu đồng',
-     summ:'Sau các đợt can thiệp của NHNN, khoảng cách giữa vàng SJC và vàng thế giới quy đổi đã thu hẹp đáng kể, nhưng vẫn duy trì ở mức cao so với thông lệ quốc tế.'},
+     summ:'Sau các đợt can thiệp của NHNN, khoảng cách giữa vàng SJC và vàng thế giới đã thu hẹp đáng kể.',
+     body:`<p>Giá vàng miếng SJC hiện đang neo ở mức cao, song khoảng cách giữa vàng SJC và giá vàng thế giới quy đổi đã thu hẹp đáng kể sau nhiều đợt can thiệp của Ngân hàng Nhà nước. Hiện chênh lệch còn khoảng 1.2 triệu đồng/lượng, giảm mạnh so với mức đỉnh hơn 18 triệu đồng/lượng ghi nhận hồi đầu năm.</p><p>Ngân hàng Nhà nước đã tổ chức nhiều phiên đấu thầu vàng miếng SJC, bán trực tiếp cho các ngân hàng thương mại và sau đó đến người dân, góp phần tăng cung và kéo giá về gần hơn với giá thế giới. Chính sách này được thị trường đánh giá tích cực.</p><p>Tuy nhiên, nhiều chuyên gia kinh tế cho rằng việc chênh lệch vẫn còn khá lớn phản ánh cấu trúc thị trường vàng Việt Nam chưa được quản lý theo chuẩn quốc tế. Họ khuyến nghị cần có những cải cách sâu hơn để thị trường vàng hoạt động hiệu quả và minh bạch hơn.</p><p>Giá vàng thế giới hiện giao dịch quanh mức 2,350 USD/ounce, tương đương khoảng 74.5 triệu đồng/lượng theo tỷ giá hiện tại, trong khi vàng SJC được niêm yết ở mức 75.7 triệu đồng/lượng.</p>`},
     {e:'📊',tag:'Vĩ mô',src:'VnExpress',time:'6 giờ trước',
      title:'GDP Việt Nam quý I tăng 6.72%, xuất siêu 8.1 tỷ USD — tỷ giá được hỗ trợ',
-     summ:'Số liệu kinh tế vĩ mô tích cực cùng thặng dư thương mại lớn tạo điều kiện thuận lợi để NHNN duy trì tỷ giá ổn định, dự trữ ngoại hối tiếp tục được củng cố.'},
+     summ:'Số liệu kinh tế vĩ mô tích cực cùng thặng dư thương mại lớn hỗ trợ tỷ giá ổn định.',
+     body:`<p>Tổng cục Thống kê vừa công bố GDP Việt Nam quý I năm nay tăng trưởng 6.72% so với cùng kỳ năm ngoái, vượt kỳ vọng của hầu hết các chuyên gia kinh tế. Đây là mức tăng trưởng cao nhất trong 5 quý gần đây, được thúc đẩy bởi sự phục hồi mạnh mẽ của ngành sản xuất và xuất khẩu.</p><p>Đặc biệt, Việt Nam ghi nhận thặng dư thương mại lên tới 8.1 tỷ USD trong quý I, chủ yếu nhờ xuất khẩu điện tử, máy tính và các sản phẩm công nghệ cao tăng mạnh. Con số này tạo nguồn cung ngoại tệ dồi dào, hỗ trợ đắc lực cho Ngân hàng Nhà nước trong việc ổn định tỷ giá.</p><p>Ngân hàng Nhà nước đã tận dụng cơ hội này để bổ sung dự trữ ngoại hối quốc gia, hiện đạt khoảng 100 tỷ USD — mức cao kỷ lục. Dự trữ ngoại hối lớn là "tấm đệm" quan trọng giúp Việt Nam chống đỡ các cú sốc bên ngoài và duy trì ổn định tỷ giá.</p><p>Các tổ chức quốc tế như IMF và World Bank đều nâng dự báo tăng trưởng của Việt Nam năm nay lên 6.5-6.8%, phản ánh niềm tin vào triển vọng kinh tế vĩ mô ổn định của đất nước.</p>`},
     {e:'🏛️',tag:'Chính sách',src:'TTXVN',time:'8 giờ trước',
      title:'NHNN niêm yết tỷ giá trung tâm USD/VND ở mức 24,250 — tăng 15 đồng',
-     summ:'Ngân hàng Nhà nước Việt Nam công bố tỷ giá trung tâm phiên giao dịch mới nhất, tăng 15 đồng so với phiên hôm qua trong bối cảnh đồng USD toàn cầu có phần tăng nhẹ.'},
+     summ:'Ngân hàng Nhà nước công bố tỷ giá trung tâm phiên giao dịch mới nhất tăng 15 đồng so với hôm qua.',
+     body:`<p>Ngân hàng Nhà nước Việt Nam (NHNN) vừa công bố tỷ giá trung tâm USD/VND cho phiên giao dịch hôm nay ở mức 24,250 đồng/USD, tăng 15 đồng so với phiên trước. Đây là tỷ giá được NHNN công bố hàng ngày làm cơ sở cho các ngân hàng thương mại xác định tỷ giá giao dịch với biên độ ±5%.</p><p>Theo quy định hiện hành, các ngân hàng thương mại được phép mua bán ngoại tệ với khách hàng trong biên độ ±5% so với tỷ giá trung tâm do NHNN công bố. Điều này có nghĩa tỷ giá USD/VND có thể dao động từ khoảng 23,038 đến 25,463 đồng/USD trong phiên hôm nay.</p><p>NHNN cho biết việc điều chỉnh tỷ giá trung tâm tăng nhẹ phản ánh diễn biến thực tế của thị trường ngoại hối quốc tế, trong đó đồng USD có xu hướng tăng nhẹ so với các đồng tiền chủ chốt. Cơ quan này khẳng định sẽ tiếp tục điều hành tỷ giá linh hoạt, phù hợp với diễn biến thị trường, đảm bảo mục tiêu ổn định kinh tế vĩ mô.</p><p>Thị trường ngoại hối Việt Nam hiện hoạt động ổn định, thanh khoản dồi dào và không có dấu hiệu căng thẳng, theo đánh giá của các chuyên gia kinh tế.</p>`},
     {e:'🌏',tag:'Phân tích',src:'Đầu tư Online',time:'10 giờ trước',
      title:'Chuyên gia: EUR/USD có thể về vùng 1.09 khi ECB phát tín hiệu cắt giảm lãi suất',
-     summ:'Các nhà phân tích nhận định áp lực từ lạm phát Eurozone giảm nhanh hơn dự kiến, cùng khả năng ECB cắt giảm lãi suất sớm, sẽ tạo sức ép lên EUR trong tháng tới.'},
+     summ:'Áp lực từ lạm phát giảm nhanh và khả năng ECB cắt lãi suất sớm sẽ tạo sức ép lên EUR.',
+     body:`<p>Các chuyên gia phân tích tại Dragon Capital và nhiều tổ chức tài chính lớn nhận định cặp tỷ giá EUR/USD có thể kiểm tra lại vùng hỗ trợ 1.09 trong tháng tới, do áp lực từ nhiều phía đang dồn lên đồng Euro.</p><p>Thứ nhất, lạm phát khu vực Eurozone đang giảm nhanh hơn dự kiến, tiến về mục tiêu 2% của Ngân hàng Trung ương Châu Âu (ECB). Điều này tạo điều kiện cho ECB cắt giảm lãi suất sớm hơn so với Fed, dẫn đến chênh lệch lãi suất bất lợi cho Euro.</p><p>Thứ hai, kinh tế Đức — đầu tàu của Eurozone — tiếp tục tăng trưởng yếu, với PMI sản xuất vẫn dưới ngưỡng 50 điểm nhiều tháng liên tiếp. Nếu tình trạng này kéo dài, áp lực cắt giảm lãi suất lên ECB sẽ càng lớn hơn.</p><p>Thứ ba, rủi ro chính trị tại một số nước thành viên EU cũng là yếu tố cản trở sự phục hồi của đồng Euro. Bầu cử tại nhiều quốc gia quan trọng trong năm nay có thể tạo ra sự không chắc chắn về chính sách tài khóa.</p><p>Đối với nhà đầu tư và doanh nghiệp Việt Nam có giao dịch EUR, các chuyên gia khuyến nghị nên xem xét sử dụng công cụ phòng ngừa rủi ro tỷ giá nếu có nghĩa vụ thanh toán EUR trong thời gian tới.</p>`},
   ],
   ko:[
-    {e:'📈',tag:'외환',src:'한국경제',time:'15분 전',title:'Fed 금리 동결 시사에 달러 약세... 원/달러 1,340원대 하락',summ:'연방준비제도가 금리를 동결할 것이라는 신호를 보내면서 달러화가 주요 통화 대비 약세를 보이고 있습니다.'},
-    {e:'🏦',tag:'은행',src:'매일경제',time:'1시간 전',title:'국내 시중은행, 엔화 환전 수수료 인하 경쟁 시작',summ:'일본 여행객 증가에 따라 주요 은행들이 엔화 환전 수수료를 잇따라 인하, 일부 비대면 채널에서 50% 우대 혜택을 제공합니다.'},
-    {e:'🇻🇳',tag:'베트남',src:'아시아경제',time:'2시간 전',title:'베트남 중앙은행, 동화 안정 위한 외환 시장 개입 강화',summ:'베트남 국가은행(SBV)이 달러 강세에 대응해 시장 개입을 확대, 동화 절하 폭을 2% 이내로 제한하겠다는 방침을 밝혔습니다.'},
-    {e:'💴',tag:'일본',src:'연합뉴스',time:'4시간 전',title:'엔화 150엔 재돌파... 일본은행 구두 개입에도 약세 지속',summ:'달러/엔 환율이 심리적 저항선 150엔을 재차 돌파, 일본은행의 구두 개입에도 불구하고 엔화 약세가 이어지고 있습니다.'},
-    {e:'📊',tag:'분석',src:'Bloomberg KR',time:'6시간 전',title:'원화 연초 대비 10% 절하... 수출은 호재, 수입 물가는 우려',summ:'절하된 원화가 수출 기업 경쟁력을 높이는 반면, 에너지·원자재 수입 비용 증가로 인한 물가 압력도 가중될 것으로 분석됩니다.'},
-    {e:'🌏',tag:'아시아',src:'Reuters KR',time:'8시간 전',title:'아시아 통화 일제 강세... 달러 인덱스 103선 붕괴',summ:'미국 CPI가 예상치를 하회하면서 달러 인덱스가 103선 아래로 하락, 원화·엔화·위안화 등 아시아 주요 통화들이 일제히 강세를 나타냈습니다.'},
+    {e:'📈',tag:'외환',src:'한국경제',time:'15분 전',
+     title:'Fed 금리 동결 시사에 달러 약세... 원/달러 1,340원대 하락',
+     summ:'연방준비제도가 금리를 동결할 것이라는 신호를 보내면서 달러화가 주요 통화 대비 약세를 보이고 있습니다.',
+     body:`<p>연방준비제도(Fed)가 이번 달 통화정책 회의에서 기준금리를 동결할 것이라는 명확한 신호를 보낸 이후, 달러화가 주요 통화 대비 일제히 약세를 나타내며 원/달러 환율이 1,340원대로 하락했습니다.</p><p>제롬 파월 Fed 의장은 기자회견에서 "인플레이션이 목표치인 2%를 향해 꾸준히 내려오고 있다"며 "위원회는 추가 데이터를 확인하면서 신중하게 접근할 것"이라고 밝혔습니다. 시장에서는 이를 사실상 금리 동결 선언으로 해석했습니다.</p><p>서울 외환시장에서 원/달러 환율은 전일 대비 12원 하락한 1,342원에 마감했습니다. 이는 최근 3개월 만의 최저치로, 원화 강세가 뚜렷하게 나타났습니다.</p><p>국내 수출 기업들은 원화 강세로 인한 가격 경쟁력 약화를 우려하고 있는 반면, 수입 기업들은 수입 원가 절감 효과를 기대하고 있습니다. 한국은행은 환율 동향을 면밀히 주시하고 있다고 밝혔습니다.</p>`},
+    {e:'🏦',tag:'은행',src:'매일경제',time:'1시간 전',
+     title:'국내 시중은행, 엔화 환전 수수료 인하 경쟁 시작',
+     summ:'일본 여행객 증가에 따라 주요 은행들이 엔화 환전 수수료를 잇따라 인하하고 있습니다.',
+     body:`<p>국내 주요 시중은행들이 일본 여행 수요 급증에 발맞춰 엔화 환전 수수료를 대폭 인하하는 경쟁에 나서고 있습니다. KB국민은행, 신한은행, 하나은행, 우리은행 등 4대 시중은행이 잇따라 엔화 환전 우대 혜택을 발표했습니다.</p><p>KB국민은행은 비대면 채널인 KB스타뱅킹 앱을 통한 엔화 환전 시 수수료를 최대 90%까지 우대한다고 밝혔습니다. 신한은행 역시 쏠(SOL) 앱에서 50% 환율 우대를 제공하며 맞불을 놓았습니다.</p><p>엔화는 일본은행(BOJ)의 완화적 통화정책 지속으로 약세 기조가 이어지면서 최근 달러당 150엔을 재차 돌파하는 등 역대 최저 수준 근방에서 거래되고 있습니다. 이에 따라 한국인들의 일본 여행 수요가 더욱 늘어날 것으로 예상됩니다.</p><p>금융권 관계자는 "엔화 환율 우대 경쟁이 치열해지면서 소비자들은 더 좋은 조건에 환전할 수 있게 됐다"며 "모바일 앱을 통한 환전이 가장 유리하다"고 조언했습니다.</p>`},
+    {e:'🇻🇳',tag:'베트남',src:'아시아경제',time:'2시간 전',
+     title:'베트남 중앙은행, 동화 안정 위한 외환 시장 개입 강화',
+     summ:'베트남 국가은행(SBV)이 달러 강세에 대응해 시장 개입을 확대하고 있습니다.',
+     body:`<p>베트남 국가은행(SBV)이 달러화 강세에 따른 베트남 동화(VND) 절하 압력에 대응하기 위해 외환 시장 개입을 강화하고 있습니다. SBV는 최근 수십억 달러 규모의 외환 보유고를 활용해 시장에 달러를 공급하고 있습니다.</p><p>SBV 관계자는 "동화 절하 폭을 연간 2% 이내로 제한한다는 방침은 변함없다"며 "충분한 외환 보유고를 보유하고 있어 시장 안정화에 문제가 없다"고 밝혔습니다. 베트남의 외환 보유고는 현재 약 1,000억 달러 수준인 것으로 알려졌습니다.</p><p>베트남 동화는 연초 대비 약 1.5% 절하된 상태로, 달러당 25,400~25,500동 범위에서 거래되고 있습니다. 이는 다른 아시아 신흥국 통화 대비 상대적으로 안정적인 수준입니다.</p><p>한국과 베트남 간 교역 규모가 연간 800억 달러를 넘어서는 상황에서 원/동화 환율 안정은 양국 기업들의 거래 비용 절감에도 도움이 되고 있습니다.</p>`},
+    {e:'💴',tag:'일본',src:'연합뉴스',time:'4시간 전',
+     title:'엔화 150엔 재돌파... 일본은행 구두 개입에도 약세 지속',
+     summ:'달러/엔 환율이 심리적 저항선 150엔을 재차 돌파하며 엔화 약세가 이어지고 있습니다.',
+     body:`<p>달러/엔 환율이 심리적 저항선인 150엔을 재차 돌파하면서 엔화 약세가 지속되고 있습니다. 일본 정부와 일본은행(BOJ) 관계자들의 잇따른 구두 개입에도 불구하고 시장의 매도 압력은 완화되지 않고 있습니다.</p><p>일본 재무성 관계자는 "환율 움직임을 예의주시하고 있으며, 과도한 변동성에 대해서는 적절한 조치를 취할 준비가 돼 있다"고 경고했습니다. 그러나 BOJ가 초저금리 정책을 유지하는 한, 미일 금리 차로 인한 엔화 약세 구조는 바뀌기 어렵다는 게 시장의 지배적 시각입니다.</p><p>엔화 약세는 일본 수출 기업에는 호재지만, 수입 물가 상승을 통해 일반 시민들의 생활비 부담을 가중시키고 있습니다. 특히 에너지와 식품 수입 비용 증가가 두드러집니다.</p><p>한국인 여행객들에게는 엔화 약세가 일본 여행 경비 절감으로 이어져 일본 방문 수요를 더욱 자극하고 있습니다. 원/엔 환율은 현재 100엔당 약 880원 수준에서 거래되고 있습니다.</p>`},
+    {e:'📊',tag:'분석',src:'Bloomberg KR',time:'6시간 전',
+     title:'원화 연초 대비 10% 절하... 수출은 호재, 수입 물가는 우려',
+     summ:'절하된 원화가 수출 기업의 가격 경쟁력을 높이는 반면, 수입 물가 상승 우려도 있습니다.',
+     body:`<p>올해 초 대비 약 10% 절하된 원화가 한국 경제에 엇갈린 영향을 미치고 있다는 분석이 나왔습니다. Bloomberg Economics는 원화 약세가 단기적으로 수출 경쟁력을 높이는 효과가 있지만, 중장기적으로는 수입 물가 상승을 통한 인플레이션 압력을 키울 수 있다고 경고했습니다.</p><p>삼성전자, 현대차 등 대형 수출 기업들은 원화 약세로 인해 달러 표시 매출이 원화로 환산될 때 더 큰 이익을 거둘 수 있어 실적 개선이 기대됩니다. 실제로 주요 대기업들의 1분기 실적은 환율 효과로 시장 예상을 웃돌았습니다.</p><p>반면, 에너지와 원자재를 대부분 수입에 의존하는 한국 경제 특성상 원화 약세는 수입 비용 증가로 이어집니다. 국제 유가가 안정된 상황에서도 원화 약세로 인해 국내 에너지 가격은 상승 압력을 받고 있습니다.</p><p>한국은행은 물가 안정과 경기 지원 사이에서 어려운 균형을 맞춰야 하는 상황입니다. 시장에서는 한국은행이 올해 하반기에 한 차례 금리를 인하할 것으로 예상하고 있습니다.</p>`},
+    {e:'🌏',tag:'아시아',src:'Reuters KR',time:'8시간 전',
+     title:'아시아 통화 일제 강세... 달러 인덱스 103선 붕괴',
+     summ:'미국 CPI 하회로 달러 인덱스가 103선 아래로 하락, 아시아 주요 통화들이 강세를 보였습니다.',
+     body:`<p>미국의 소비자물가지수(CPI)가 시장 예상치를 하회하면서 달러 인덱스(DXY)가 103선 아래로 급락했고, 아시아 주요 통화들이 일제히 강세를 나타냈습니다.</p><p>미 노동부가 발표한 CPI 데이터에 따르면 전월 대비 물가 상승률이 0.2%로, 시장 예상치 0.3%를 밑돌았습니다. 이는 Fed의 금리 인하 기대를 앞당기는 요인으로 작용했고, 달러화는 즉각 약세로 반응했습니다.</p><p>아시아 시장에서 일본 엔화는 달러 대비 1.3% 강세, 중국 위안화는 0.4% 강세, 한국 원화는 0.9% 강세를 나타냈습니다. 동남아시아에서도 태국 바트, 베트남 동화, 싱가포르 달러 모두 강세를 보였습니다.</p><p>이번 CPI 데이터는 "인플레이션이 꺾이고 있다"는 Fed의 주장에 힘을 실어주는 것으로, 시장에서는 Fed가 올해 안에 두 차례 금리를 인하할 것으로 내다보고 있습니다. 이는 아시아 신흥국 통화에도 긍정적인 영향을 미칠 전망입니다.</p>`},
   ],
   'zh-cn':[
-    {e:'📈',tag:'外汇',src:'财联社',time:'15分钟前',title:'美联储维持利率不变信号明确，美元指数跌破103',summ:'美联储主席鲍威尔暗示本月会议将维持利率不变，美元指数随即走软，人民币汇率小幅回升至7.23附近。'},
-    {e:'🏦',tag:'银行',src:'第一财经',time:'1小时前',title:'国有大行集体下调存款利率，有助人民币汇率稳定',summ:'工农中建四大国有银行宣布下调各期限存款利率，有助于银行降低负债成本，并为人民币汇率稳定创造条件。'},
-    {e:'🇻🇳',tag:'东南亚',src:'新华财经',time:'2小时前',title:'越南央行加大干预力度，越盾兑美元保持相对稳定',summ:'越南国家银行通过公开市场操作注入流动性，同时收紧黑市外汇管控，越盾兑美元汇率保持在25,400-25,500区间。'},
-    {e:'💱',tag:'政策',src:'证券时报',time:'4小时前',title:'央行上调外汇存款准备金率，稳汇率工具箱持续扩充',summ:'中国人民银行宣布上调金融机构外汇存款准备金率至6%，彰显监管层稳定人民币汇率的坚定决心。'},
-    {e:'📊',tag:'分析',src:'华尔街见闻',time:'6小时前',title:'人民币离岸汇率CNH与在岸CNY价差扩大，套利空间引关注',summ:'CNH与CNY的价差近期扩大至300-400个基点，分析人士认为这反映了市场对人民币汇率走势的分歧加大。'},
-    {e:'🌏',tag:'宏观',src:'经济观察报',time:'8小时前',title:'亚洲货币集体走强，日元领涨，区域外汇储备规模创新高',summ:'在美元走软的背景下，亚洲主要货币普遍走强，东南亚各国央行借机补充外汇储备，区域总储备规模创历史新高。'},
+    {e:'📈',tag:'外汇',src:'财联社',time:'15分钟前',
+     title:'美联储维持利率不变信号明确，美元指数跌破103',
+     summ:'美联储主席鲍威尔暗示本月会议将维持利率不变，美元指数随即走软。',
+     body:`<p>美联储主席杰罗姆·鲍威尔在最新一次讲话中明确暗示，本月货币政策委员会会议将维持基准利率不变，为市场提供了明确的政策信号。受此消息影响，美元指数(DXY)应声下跌，跌破103的关键支撑位。</p><p>鲍威尔表示："通货膨胀正在朝着我们的目标稳步回落，但我们需要看到更多证据才能确信通胀已经得到持久控制。"这一表述被市场解读为偏鸽派立场，意味着短期内加息的可能性极低。</p><p>受美元走软影响，人民币兑美元汇率小幅回升至7.23附近，离岸人民币(CNH)升至7.25。中国人民银行将人民币兑美元中间价上调至7.1023，创近期新高。</p><p>对越南等东南亚国家的企业而言，美元走软意味着以美元计价的出口收入换算成本币时会有所减少，但整体来看，美元稳定有利于区域贸易的健康发展。</p>`},
+    {e:'🏦',tag:'银行',src:'第一财经',time:'1小时前',
+     title:'国有大行集体下调存款利率，有助人民币汇率稳定',
+     summ:'工农中建四大国有银行宣布下调各期限存款利率，有助于银行降低负债成本并稳定汇率。',
+     body:`<p>中国工商银行、农业银行、中国银行、建设银行四大国有银行宣布同步下调各期限人民币存款挂牌利率，此举将有效降低银行业的整体负债成本，为支持实体经济、稳定汇率创造有利条件。</p><p>据悉，此次调整后，一年期定期存款利率下调约15个基点至1.65%，两年期和三年期存款利率也相应下调。这是今年内银行业第二次集体下调存款利率。</p><p>分析人士指出，存款利率下调有助于银行维持合理的净息差水平，同时也为贷款利率的进一步下调留出空间，有利于降低实体经济的融资成本。从汇率角度看，存款利率下调可能会在一定程度上降低人民币资产的吸引力，但当前中美利差已相当大，短期内对汇率的影响有限。</p><p>对于在中国开展业务的外资企业和越南企业而言，此次调整可能会影响其在华资金管理策略，需要密切关注相关变化。</p>`},
+    {e:'🇻🇳',tag:'东南亚',src:'新华财经',time:'2小时前',
+     title:'越南央行加大干预力度，越盾兑美元保持相对稳定',
+     summ:'越南国家银行通过公开市场操作注入流动性，越盾兑美元汇率保持在25,400-25,500区间。',
+     body:`<p>越南国家银行(SBV)近期加大外汇市场干预力度，通过公开市场操作向市场注入流动性，并收紧对黑市外汇交易的管控，成功将越南盾兑美元汇率稳定在25,400至25,500区间内。</p><p>SBV副行长在新闻发布会上表示，越南拥有充足的外汇储备（约1,000亿美元），完全有能力维护汇率稳定。同时，强劲的出口数据和持续流入的外商直接投资(FDI)为越南盾提供了有力支撑。</p><p>2024年一季度，越南吸引外商直接投资约60亿美元，同比增长13.4%。制造业，尤其是电子产品和半导体领域，成为吸引外资的主要来源，其中来自韩国、日本和中国大陆的投资占据重要份额。</p><p>对于中越贸易企业而言，越南盾汇率的相对稳定降低了汇兑风险，有利于双边贸易的顺利开展。目前，人民币兑越南盾汇率约为1人民币兑3,500越南盾，全年维持较为稳定的走势。</p>`},
+    {e:'💱',tag:'政策',src:'证券时报',time:'4小时前',
+     title:'央行上调外汇存款准备金率，稳汇率工具箱持续扩充',
+     summ:'中国人民银行宣布上调金融机构外汇存款准备金率至6%，体现稳定人民币汇率的坚定决心。',
+     body:`<p>中国人民银行宣布将金融机构外汇存款准备金率上调2个百分点至6%，该政策将于下月起正式实施。这是央行今年以来第三次动用这一逆周期调节工具，彰显了监管层维护人民币汇率稳定的坚定决心。</p><p>上调外汇存款准备金率的主要效果是减少市场上可用的美元供应量，从而降低美元对人民币的兑换需求，起到支撑人民币汇率的作用。分析人士认为，这一工具在技术上类似于"冻结"部分美元流动性。</p><p>与此同时，央行还通过设定较强的人民币中间价（高于市场预期）来引导市场预期，防止人民币过快贬值。这种"口头干预+实质工具"的组合拳已被市场验证为有效的汇率管理手段。</p><p>外汇专家提醒，尽管央行拥有丰富的工具箱，但根本决定汇率走向的仍是中美经济基本面和利差变化。当前美联储政策转向的预期是支撑人民币走强的最重要外部因素。</p>`},
+    {e:'📊',tag:'分析',src:'华尔街见闻',time:'6小时前',
+     title:'人民币离岸汇率CNH与在岸CNY价差扩大，套利空间引关注',
+     summ:'CNH与CNY的价差近期扩大至300-400个基点，分析人士认为这反映了市场预期的分化。',
+     body:`<p>近期，离岸人民币(CNH)与在岸人民币(CNY)之间的价差显著扩大，达到300至400个基点，引发市场广泛关注。分析人士认为，这一现象背后反映的是市场对人民币汇率未来走势预期的明显分歧。</p><p>一般而言，CNH价格低于CNY（即离岸人民币相对在岸人民币更弱）意味着境外投资者对人民币存在更强的贬值预期。当价差扩大时，理论上存在通过跨境资金流动进行套利的空间，但受资本管制影响，大规模套利操作并不容易实现。</p><p>中国人民银行对CNH与CNY之间的价差保持高度关注，当价差超出合理范围时，央行通常会通过国有银行在香港市场进行干预，以收窄两者之间的差距。</p><p>对于在越南设有业务的中资企业而言，人民币汇率的波动会直接影响其跨境资金管理和利润汇回策略。建议密切跟踪CNH走势，并根据具体业务情况适时调整汇率风险对冲方案。</p>`},
+    {e:'🌏',tag:'宏观',src:'经济观察报',time:'8小时前',
+     title:'亚洲货币集体走强，日元领涨，区域外汇储备规模创新高',
+     summ:'美元走软背景下，亚洲主要货币普遍走强，东南亚各国央行趁机补充外汇储备。',
+     body:`<p>在美元走软的大背景下，亚洲主要货币本周集体走强，其中日元单日升值幅度超过1%，领涨亚洲外汇市场。与此同时，东南亚各国央行纷纷把握机会在市场买入美元，补充外汇储备，使区域外汇储备总规模创下历史新高。</p><p>据亚洲开发银行(ADB)最新数据，亚太区域国家外汇储备总规模已超过6万亿美元，其中中国约3.2万亿，日本约1.2万亿，东盟十国合计约1万亿，较去年同期增长约8%。</p><p>充裕的外汇储备为亚洲各国应对外部冲击提供了坚实的"防护墙"。相比2008年金融危机和1997年亚洲金融危机时期，当前亚洲国家的外汇储备状况要好得多，抗风险能力显著增强。</p><p>越南在此轮补仓行动中也积极参与，外汇储备进一步充实至约1,000亿美元的历史高位，为越南盾汇率稳定和经济健康发展奠定了坚实基础。</p>`},
   ],
   'zh-tw':[
-    {e:'📈',tag:'外匯',src:'工商時報',time:'15分鐘前',title:'聯準會維持利率確認，美元回落，新台幣升至30.8',summ:'聯準會主席鮑爾確認維持利率不變，美元指數應聲下跌，新台幣兌美元匯率升至30.8附近，為近兩個月高點。'},
-    {e:'🏦',tag:'銀行',src:'經濟日報',time:'1小時前',title:'台銀、兆豐調整越南盾換匯牌告，旅遊旺季需求升溫',summ:'因越南旅遊需求持續增長，多家本國銀行調整VND換匯牌告，並提醒民眾出發前預先換匯以取得較優匯率。'},
-    {e:'🇻🇳',tag:'越南',src:'中央社',time:'2小時前',title:'越南Q1 GDP成長6.72%，外貿順差81億美元，匯率壓力舒緩',summ:'越南優於預期的經濟數據帶動越南盾走勢趨穩，龐大的貿易順差為越南國家銀行補充外匯儲備提供有力支撐。'},
-    {e:'💴',tag:'日本',src:'Reuters TW',time:'3小時前',title:'日圓再跌破150關口，日銀言辭干預效果有限',summ:'美元/日圓再度突破150心理關口，日本銀行官員的言辭干預未能有效阻止日圓貶勢，市場觀望實際操作時機。'},
-    {e:'📊',tag:'分析',src:'鉅亨網',time:'5小時前',title:'人民幣離岸匯率走弱，台商調整匯兌避險策略應對',summ:'離岸人民幣匯率走弱，在越南、東南亞設廠的台商積極調整匯兌避險策略，降低人民幣貶值對業績衝擊。'},
-    {e:'🌏',tag:'總體',src:'天下雜誌',time:'7小時前',title:'東協匯率分化：越南盾穩，泰銖承壓，投資者謹慎觀望',summ:'東協各國貨幣走勢分化，越南盾因出口強勁保持穩定，泰銖受政治不確定性持續承壓，投資者對匯率風險評估趨謹慎。'},
+    {e:'📈',tag:'外匯',src:'工商時報',time:'15分鐘前',
+     title:'聯準會維持利率確認，美元回落，新台幣升至30.8',
+     summ:'聯準會主席鮑爾確認維持利率不變，美元指數應聲下跌，新台幣升至近兩個月高點。',
+     body:`<p>美國聯邦準備理事會(Fed)主席鮑爾在最新一次政策聲明中確認，本月利率決策會議將維持聯邦基金利率不變，符合市場預期。消息公布後，美元指數(DXY)應聲下跌，跌破103關鍵支撐，帶動亞洲貨幣普遍走強。</p><p>台灣外匯市場方面，新台幣兌美元匯率升至30.8元附近，創近兩個月高點，單日升值幅度約0.5%。台灣央行(CBC)對匯率走勢表示樂見，但重申將視市場情況適時進行調節操作，防止過度波動。</p><p>台灣科技業出口商對新台幣走強有所警惕，因為強勢台幣可能壓縮以美元計價的出口利潤。不過，分析師指出，台積電等廠商已建立完善的匯率避險機制，短期匯率波動對獲利的實質衝擊相對有限。</p><p>對於往來越南的台商而言，越南盾兌台幣匯率亦隨之小幅調整，目前1台幣約可兌換800越南盾，整體匯兌環境維持穩定。</p>`},
+    {e:'🏦',tag:'銀行',src:'經濟日報',time:'1小時前',
+     title:'台銀、兆豐調整越南盾換匯牌告，旅遊旺季需求升溫',
+     summ:'因越南旅遊需求增長，多家本國銀行調整VND換匯牌告，並提醒民眾出發前預先換匯。',
+     body:`<p>隨著台灣旅客赴越南旅遊需求持續升溫，台灣銀行、兆豐銀行等主要本國銀行相繼調整越南盾(VND)換匯牌告匯率，並提醒有意赴越旅遊的民眾及早換匯，以取得較為優惠的匯率。</p><p>台灣銀行公告，現行越南盾現鈔買入匯率約為每台幣820越南盾，賣出匯率則為每台幣780越南盾。考量越南盾並非主要國際貨幣，換匯手續費相對較高，建議旅客根據行程長短合理規劃換匯金額。</p><p>業界人士指出，越南目前已是台灣旅客前五大熱門旅遊目的地，年訪客數超過50萬人次。胡志明市、峴港、河內等城市的旅遊設施日趨完善，消費水準也隨之提升，預計帶動換匯需求持續增長。</p><p>在越投資的台商則建議，企業層次的大額換匯最好透過銀行企業金融部門洽詢，通常可取得比牌告匯率更優惠的條件，且可規避匯率波動風險。</p>`},
+    {e:'🇻🇳',tag:'越南',src:'中央社',time:'2小時前',
+     title:'越南Q1 GDP成長6.72%，外貿順差81億美元，匯率壓力舒緩',
+     summ:'越南優於預期的經濟數據帶動越南盾走勢趨穩，龐大貿易順差支撐外匯儲備。',
+     body:`<p>越南統計總局公布，2024年第一季GDP成長率達6.72%，超越市場預期的6.3%，創下近五季最佳表現。強勁的製造業和出口是主要成長動能，對越南盾匯率形成正面支撐。</p><p>貿易方面，越南第一季錄得81億美元的貿易順差，主要受惠於電子產品、機械設備和紡織品出口大幅成長。外商直接投資(FDI)方面，第一季吸引約60億美元的外資流入，其中台灣、韓國、日本和中國大陸是主要來源地。</p><p>越南國家銀行(SBV)表示，充沛的貿易順差和FDI流入為補充外匯儲備創造了有利條件，目前外匯儲備已達約1,000億美元歷史高點。充足的外匯儲備使SBV有能力在必要時干預外匯市場，維護越南盾匯率穩定。</p><p>對台灣企業而言，越南穩健的經濟基本面降低了在越投資的匯率風險。台商在評估越南投資計畫時，可對越南盾匯率穩定性持較為樂觀的態度。</p>`},
+    {e:'💴',tag:'日本',src:'Reuters TW',time:'3小時前',
+     title:'日圓再跌破150關口，日銀言辭干預效果有限',
+     summ:'美元/日圓再度突破150心理關口，市場觀望日銀是否將啟動實際市場操作。',
+     body:`<p>美元兌日圓匯率再度突破150元的心理關鍵關口，距2022年創下的32年低點151.94只有一步之遙。日本銀行(BOJ)及財務省官員雖然接連發出言辭警告，但實際干預行動遲遲未至，市場的賣壓未見明顯緩解。</p><p>日本財務大臣鈴木俊一表示，「我們對近期匯率的過度波動感到擔憂，將採取一切必要措施應對」，這是典型的「言辭干預」用語。市場人士普遍認為，除非日圓跌速加快，否則日本當局不太可能真正入場干預。</p><p>從根本上來說，BOJ維持超寬鬆貨幣政策，與Fed維持高利率之間形成的巨大利差，才是驅動日圓持續走弱的核心因素。只要這一利差格局不改變，日圓就很難有效反彈。</p><p>台灣民眾赴日旅遊的熱潮仍未消退，日圓持續走弱讓台幣持有者獲得更多實質購買力。目前100日圓約可兌換22.5新台幣，仍處於歷史相對低位，有意赴日旅遊者不妨把握機會。</p>`},
+    {e:'📊',tag:'分析',src:'鉅亨網',time:'5小時前',
+     title:'人民幣離岸匯率走弱，台商調整匯兌避險策略應對',
+     summ:'離岸人民幣匯率走弱，在越南東南亞設廠的台商積極調整匯兌避險策略。',
+     body:`<p>離岸人民幣(CNH)匯率近期出現明顯走弱跡象，引發在越南、東南亞等地設有工廠的台灣製造商高度關注。這些台商在生產過程中往往同時涉及人民幣、越南盾、美元和新台幣等多種貨幣，匯率風險管理難度相當高。</p><p>據鉅亨網調查，超過六成在東南亞設廠的台商已開始積極調整匯兌避險策略。常見做法包括：增加遠期外匯合約的使用比例、提前結匯以鎖定較佳匯率、調整貨幣計價方式（如改以美元替代人民幣計價）等。</p><p>台商的人民幣曝險主要來自兩個方面：一是向中國大陸採購原材料或半成品的付款；二是透過中國大陸子公司進行的轉口貿易。前者的匯率風險相對較易管控，後者則因涉及資本項目而受到較多限制。</p><p>匯率專家建議，面對當前複雜的多幣別匯率環境，台商應建立系統性的外匯風險管理框架，定期審視各幣別曝險部位，並根據市場變化動態調整避險比例，而非依賴單一工具或臨時性應對。</p>`},
+    {e:'🌏',tag:'總體',src:'天下雜誌',time:'7小時前',
+     title:'東協匯率分化：越南盾穩，泰銖承壓，投資者謹慎觀望',
+     summ:'東協各國貨幣走勢分化，越南盾因出口強勁保持穩定，泰銖受政治不確定性持續承壓。',
+     body:`<p>東南亞國協(ASEAN)各國貨幣近期走勢出現明顯分化，反映出各國不同的經濟基本面和政治環境。越南盾表現相對穩健，而泰銖則持續承受政治不確定性帶來的壓力，使投資者對整體東協新興市場的匯率風險評估趨於謹慎。</p><p>越南盾(VND)得益於強勁的出口表現、持續流入的外商直接投資，以及越南國家銀行的積極干預，全年匯率波幅控制在約2%以內，在東南亞各國中表現最為穩定。</p><p>泰銖(THB)則受到政治動盪的拖累，泰國政府組成長期不穩定，加上旅遊業復甦不如預期，致使泰銖承受較大的貶值壓力。目前泰銖兌美元已較年初貶值約5%，落後於東南亞同儕。</p><p>對台灣投資者而言，東協各國匯率走勢分化意味著需要對個別市場進行更細緻的風險評估，不能以「東南亞整體」作為投資決策依據。尤其是考量越南投資機會時，越南盾的相對穩定性是一個加分項目。</p>`},
   ],
 };
 
 function renderNews(){
   const data=NEWS[lang]||NEWS.vi;
-  document.getElementById('newsGrid').innerHTML=data.map(n=>`
-    <div class="nc">
+  document.getElementById('newsGrid').innerHTML=data.map((n,i)=>`
+    <div class="nc" onclick="openModal(${i})" style="cursor:pointer">
       <div class="nth">${n.e}</div>
       <div class="nb">
         <div class="nmeta"><span class="nsrc">${n.src}</span><span class="ntime">${n.time}</span></div>
@@ -808,6 +933,37 @@ function renderNews(){
       </div>
     </div>`).join('');
 }
+
+/* =========================================================
+   NEWS MODAL
+========================================================= */
+function openModal(idx){
+  const data=NEWS[lang]||NEWS.vi;
+  const n=data[idx];
+  if(!n) return;
+  document.getElementById('mThumb').textContent=n.e;
+  document.getElementById('mSrc').textContent=n.src;
+  document.getElementById('mTime').textContent=n.time;
+  document.getElementById('mTag').textContent=n.tag;
+  document.getElementById('mTitle').textContent=n.title;
+  document.getElementById('mContent').innerHTML=n.body||`<p>${n.summ}</p>`;
+  const disc={'vi':'Nội dung mang tính chất tham khảo','ko':'참고용 콘텐츠입니다','zh-cn':'内容仅供参考','zh-tw':'內容僅供參考'};
+  document.getElementById('mDisclaimer').textContent=disc[lang]||disc.vi;
+  const closeLabel={'vi':'✕ Đóng','ko':'✕ 닫기','zh-cn':'✕ 关闭','zh-tw':'✕ 關閉'};
+  document.getElementById('mCloseBtn').textContent=closeLabel[lang]||closeLabel.vi;
+  const overlay=document.getElementById('modalOverlay');
+  overlay.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeModal(e){
+  if(e && e.target!==document.getElementById('modalOverlay')) return;
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+// Đóng bằng phím Escape
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(null); });
 
 /* =========================================================
    CONVERTER
