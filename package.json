@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "description": "Website tỷ giá ngoại tệ Việt Nam",
   "private": true,
-  "dependencies": {
-    "@supabase/supabase-js": "^2.39.0"
-  },
+  "dependencies": {},
   "engines": {
     "node": "20.x"
   }
